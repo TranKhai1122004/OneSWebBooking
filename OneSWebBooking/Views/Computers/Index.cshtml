@@ -1,0 +1,549 @@
+@model IEnumerable<OneSWebBooking.Models.Computer>
+
+@{
+    ViewData["Title"] = "Khai báo máy tính";
+}
+
+<style>
+    body {
+        background-color: #f0f0f0;
+        font-family: Arial, sans-serif;
+    }
+    /* Khung giả lập cửa sổ Windows App */
+    .winform-window {
+        background-color: #f0f0f0;
+        border: 1px solid #999;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        font-size: 13px;
+    }
+
+    .winform-toolbar {
+        background-color: #e1e1e1;
+        border-bottom: 1px solid #b5b5b5;
+        padding: 6px 10px;
+    }
+
+    .winform-btn {
+        background: none;
+        border: 1px solid transparent;
+        padding: 5px 12px;
+        font-size: 12px;
+        color: #000;
+        cursor: pointer;
+        border-radius: 3px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 60px;
+    }
+
+        .winform-btn:hover:not(:disabled) {
+            background-color: #cce4f7;
+            border-color: #a8d2f0;
+        }
+
+        .winform-btn:disabled {
+            color: #888 !important;
+            cursor: not-allowed;
+        }
+
+        .winform-btn i {
+            font-size: 18px;
+            margin-bottom: 3px;
+        }
+
+    .winform-groupbox {
+        border: 1px solid #d0d0d0;
+        padding: 15px;
+        margin: 10px;
+        position: relative;
+        background-color: #f0f0f0;
+    }
+
+    .winform-groupbox-title {
+        position: absolute;
+        top: -10px;
+        left: 15px;
+        background-color: #f0f0f0;
+        padding: 0 5px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .form-control-sm[readonly], .form-select-sm[readonly] {
+        background-color: #e9ecef;
+        color: #6c757d;
+        border-color: #ced4da;
+    }
+
+    .winform-grid-container {
+        margin: 10px;
+        border: 1px solid #bcbcbc;
+        background-color: #fff;
+        height: 300px;
+        overflow-y: auto;
+    }
+
+    .winform-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+        .winform-table th {
+            background-color: #f0f0f0;
+            border-right: 1px solid #d0d0d0;
+            border-bottom: 2px solid #b5b5b5;
+            padding: 6px 8px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .winform-table td {
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 6px 8px;
+            cursor: pointer;
+        }
+
+        .winform-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .winform-table tr.selected-row {
+            background-color: #3399ff !important;
+            color: #fff !important;
+        }
+
+    .winform-statusbar {
+        background-color: #f0f0f0;
+        border-top: 1px solid #b5b5b5;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: #444;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .statusbar-item {
+        border-right: 1px solid #ccc;
+        padding-right: 15px;
+        margin-right: 15px;
+    }
+
+        .statusbar-item:last-child {
+            border-right: none;
+        }
+
+    .winform-table tr.row-inactive {
+        background-color: #fff2cc !important;
+        color: #b71c1c !important;
+    }
+
+        .winform-table tr.row-inactive.selected-row {
+            background-color: #3399ff !important;
+            color: #fff !important;
+        }
+</style>
+
+<div class="container-fluid mt-3">
+    <div class="card winform-window">
+        <!-- FORM CHỨA THÔNG TIN ĐỂ GỬI LÊN CONTROLLER -->
+        <form id="computerForm" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="computerId" name="Id" />
+
+            <!-- 1. THANH CÔNG CỤ NÚT BẤM (TOOLBAR) -->
+            <div class="winform-toolbar d-flex justify-content-between align-items-center">
+                <div class="d-flex gap-1">
+                    <button type="button" id="btnCreate" class="winform-btn text-success">
+                        <i class="fas fa-plus-circle"></i>Thêm mới
+                    </button>
+                    <button type="button" id="btnEdit" class="winform-btn text-warning" disabled>
+                        <i class="fas fa-edit"></i>Sửa
+                    </button>
+                    <button type="button" id="btnDelete" class="winform-btn text-danger" disabled>
+                        <i class="fas fa-times-circle"></i>Xóa
+                    </button>
+
+                    <button type="button" id="btnSave" class="winform-btn text-primary d-none">
+                        <i class="fas fa-save"></i>Ghi
+                    </button>
+                    <button type="button" id="btnCancel" class="winform-btn text-secondary d-none">
+                        <i class="fas fa-undo"></i>Hủy
+                    </button>
+                </div>
+                <div>
+                    <a href="/" class="winform-btn text-dark text-decoration-none">
+                        <i class="fas fa-power-off"></i>Thoát
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2. KHUNG NHẬP THÔNG TIN (FIX THẲNG HÀNG TĂM TẮP CHUẨN WINFORMS) -->
+            <div class="winform-groupbox">
+                <div class="winform-groupbox-title">Thông tin cấu hình máy tính</div>
+
+                <table style="width: 100%; border-collapse: separate; border-spacing: 0 6px; font-size: 13px;">
+                    <!-- Hàng 1: Tên máy -->
+                    <tr>
+                        <td style="width: 140px; text-align: right; padding-right: 10px; white-space: nowrap;">Tên máy</td>
+                        <td colspan="3">
+                            <input type="text" id="computerName" name="ComputerName" class="form-control form-control-sm border-secondary rounded-0 w-100" readonly required />
+                            <span class="text-danger small d-block" id="errorComputerName"></span>
+                        </td>
+                    </tr>
+
+                    <!-- Hàng 2: Tên quầy -->
+                    <tr>
+                        <td style="text-align: right; padding-right: 10px; white-space: nowrap;">Tên quầy</td>
+                        <td colspan="3">
+                            <input type="text" id="counterName" name="CounterName" class="form-control form-control-sm border-secondary rounded-0 w-100" readonly />
+                        </td>
+                    </tr>
+
+                    <!-- Hàng 3: Địa chỉ IP + Địa chỉ MAC -->
+                    <tr>
+                        <td style="text-align: right; padding-right: 10px; white-space: nowrap;">Địa chỉ IP</td>
+                        <td style="width: 35%;">
+                            <input type="text" id="ipAddress" name="IpAddress" class="form-control form-control-sm border-secondary rounded-0 w-100" readonly />
+                            <span class="text-danger small d-block" id="errorIpAddress"></span>
+                        </td>
+                        <td style="width: 120px; text-align: right; padding-right: 10px; white-space: nowrap;">Địa chỉ vật lý</td>
+                        <td>
+                            <input type="text" id="macAddress" name="MacAddress" class="form-control form-control-sm border-secondary rounded-0 w-100" readonly />
+                        </td>
+                    </tr>
+
+                    <!-- Hàng 4: Dịch vụ -->
+                    <tr>
+                        <td style="text-align: right; padding-right: 10px; white-space: nowrap;">Dịch vụ</td>
+                        <td colspan="3">
+                            <input type="text" id="serviceName" name="ServiceName" class="form-control form-control-sm border-secondary rounded-0 w-100" readonly />
+                        </td>
+                    </tr>
+
+                    <!-- Hàng 5: Nhóm máy tính -->
+                    <tr>
+                        <td style="text-align: right; padding-right: 10px; white-space: nowrap;">Nhóm máy tính</td>
+                        <td colspan="3">
+                            <select id="computerCategoryId" name="ComputerCategoryId" class="form-select form-select-sm border-secondary rounded-0 w-100" style="pointer-events: none; background-color: #e9ecef;">
+                                <option value="">--không chọn--</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <!-- Hàng 6: Khu vực + Loại cổng -->
+                    <tr>
+                        <td style="text-align: right; padding-right: 10px; white-space: nowrap;">Khu vực</td>
+                        <td>
+                            <select id="areaId" name="AreaId" class="form-select form-select-sm border-secondary rounded-0 w-100" style="pointer-events: none; background-color: #e9ecef;">
+                                <option value="">--không chọn--</option>
+                            </select>
+                        </td>
+                        <td style="text-align: right; padding-right: 10px; white-space: nowrap;">Loại cổng</td>
+                        <td>
+                            <select id="portType" name="PortType" class="form-select form-select-sm border-secondary rounded-0 w-100" style="pointer-events: none; background-color: #e9ecef;">
+                                <option value="">-- Chọn loại cổng --</option>
+                                <option value="Đi vào">Đi vào</option>
+                                <option value="Đi ra">Đi ra</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <!-- Hàng 7: Số lượng thẻ nuốt + Trạng thái -->
+                    <tr>
+                        <td style="text-align: right; padding-right: 10px; white-space: nowrap; line-height: 1.2;">Số lượng thẻ được<br>nuốt trong thùng</td>
+                        <td>
+                            <input type="number" id="swallowedCardCount" name="SwallowedCardCount" class="form-control form-control-sm border-secondary rounded-0 w-100" readonly min="0" value="0" />
+                        </td>
+                        <td style="text-align: right; padding-right: 10px; white-space: nowrap;">Trạng thái</td>
+                        <td>
+                            <select id="status" name="Status" class="form-select form-select-sm border-secondary rounded-0 w-100" style="pointer-events: none; background-color: #e9ecef;">
+                                <option value="true">đang hoạt động</option>
+                                <option value="false">không sử dụng</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </form>
+
+        <!-- 3. BẢNG HIỂN THỊ DANH SÁCH MÁY TÍNH -->
+        <div class="winform-grid-container">
+            <table class="winform-table" id="gridTable">
+                <thead>
+                    <tr>
+                        <th style="width: 15%">Tên máy</th>
+                        <th style="width: 15%">Tên quầy</th>
+                        <th style="width: 15%">Địa chỉ IP</th>
+                        <th style="width: 15%">Nhóm máy tính</th>
+                        <th style="width: 15%">Địa điểm</th>
+                        <th style="width: 10%">Loại cổng</th>
+                        <th style="width: 10%">Số lượng thẻ</th>
+                        <th style="width: 10%">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="@(item.Status ? "" : "row-inactive")"
+                            data-id="@item.Id"
+                            data-name="@item.ComputerName"
+                            data-counter="@item.CounterName"
+                            data-ip="@item.IpAddress"
+                            data-mac="@item.MacAddress"
+                            data-catid="@item.ComputerCategoryId"
+                            data-areaid="@item.AreaId"
+                            data-service="@item.ServiceName"
+                            data-porttype="@item.PortType"
+                            data-swallowedcardcount="@item.SwallowedCardCount"
+                            data-status="@item.Status.ToString().ToLower()"
+                            data-createdby="@item.CreatedBy"
+                            data-createddate="@(item.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss") ?? "...")"
+                            data-modifiedby="@item.ModifiedBy"
+                            data-modifieddate="@(item.ModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss") ?? "...")">
+                            <td class="fw-bold">@item.ComputerName</td>
+                            <td>@item.CounterName</td>
+                            <td>@item.IpAddress</td>
+                            <td>@(item.ComputerCategory?.CategoryName ?? "...")</td>
+                            <td>@(item.Area?.AreaName ?? "...")</td>
+                            <td>@(item.PortType ?? "")</td>
+                            <td>@item.SwallowedCardCount</td>
+                            <td>@(item.Status ? "đang hoạt động" : "không sử dụng")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. THANH TRẠNG THÁI CHÂN TRANG (AUDIT LOGS) -->
+        <div class="winform-statusbar">
+            <div class="d-flex">
+                <div class="statusbar-item">Người tạo: <span id="lblCreatedBy" class="text-primary fw-bold">...</span></div>
+                <div class="statusbar-item">Ngày tạo: <span id="lblCreatedDate" class="text-dark">...</span></div>
+                <div class="statusbar-item">Người sửa: <span id="lblModifiedBy" class="text-primary fw-bold">...</span></div>
+                <div class="statusbar-item">Ngày sửa: <span id="lblModifiedDate" class="text-dark">...</span></div>
+            </div>
+            <div>
+                <span>Tổng số bản ghi: <strong>@Model.Count()</strong></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- POPUP THÔNG BÁO LỖI -->
+<div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-0 border-dark">
+            <div class="modal-header bg-danger text-white py-1 px-2 rounded-0">
+                <span class="fw-bold small"><i class="fas fa-exclamation-triangle"></i> Thông báo lỗi</span>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="font-size: 10px;"></button>
+            </div>
+            <div class="modal-body text-center py-3 px-2" id="alertModalMessage" style="font-size: 13px;"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let currentAction = "";
+
+            // 1. CLICK CHỌN 1 DÒNG TRÊN BẢNG GRID
+            $("#gridTable tbody tr").click(function () {
+                if (currentAction !== "") return;
+
+                $("#gridTable tbody tr").removeClass("selected-row");
+                $(this).addClass("selected-row");
+
+                // Đổ ngược dữ liệu lên các ô nhập thông tin phía trên
+                $("#computerId").val($(this).attr("data-id"));
+                $("#computerName").val($(this).attr("data-name"));
+                $("#counterName").val($(this).attr("data-counter"));
+                $("#ipAddress").val($(this).attr("data-ip"));
+                $("#macAddress").val($(this).attr("data-mac"));
+                $("#serviceName").val($(this).attr("data-service"));
+                $("#status").val($(this).attr("data-status"));
+
+                // Đổ dữ liệu ACM
+                $("#portType").val($(this).attr("data-porttype") || "");
+                $("#swallowedCardCount").val($(this).attr("data-swallowedcardcount") || "0");
+
+                // Load dropdown an toàn chứa cả phần tử hiện tại (kể cả khi phần tử đó bị khóa Status = false)
+                loadDropdowns($(this).attr("data-id"), $(this).attr("data-catid"), $(this).attr("data-areaid"));
+
+                // Lấy audit logs
+                let createdBy = $(this).attr("data-createdby");
+                let createdDate = $(this).attr("data-createddate");
+                let modifiedBy = $(this).attr("data-modifiedby");
+                let modifiedDate = $(this).attr("data-modifieddate");
+
+                $("#lblCreatedBy").text(createdBy && createdBy.trim() !== "" ? createdBy : "...");
+                $("#lblCreatedDate").text(createdDate && createdDate.trim() !== "" ? createdDate : "...");
+                $("#lblModifiedBy").text(modifiedBy && modifiedBy.trim() !== "" ? modifiedBy : "...");
+                $("#lblModifiedDate").text(modifiedDate && modifiedDate.trim() !== "" ? modifiedDate : "...");
+
+                // Sáng nút Sửa và Xóa
+                $("#btnEdit").prop("disabled", false);
+                $("#btnDelete").prop("disabled", false);
+            });
+
+            // 2. BẤM NÚT THÊM MỚI
+            $("#btnCreate").click(function () {
+                currentAction = "create";
+                clearFields();
+                enableInputs(true);
+                $("#gridTable tbody tr").removeClass("selected-row");
+
+                // Load dropdowns danh sách các mục đang hoạt động (Status = true)
+                loadDropdowns(null, null, null);
+
+                $("#btnCreate, #btnEdit, #btnDelete").addClass("d-none");
+                $("#btnSave, #btnCancel").removeClass("d-none");
+            });
+
+            // 3. BẤM NÚT SỬA
+            $("#btnEdit").click(function () {
+                currentAction = "edit";
+                enableInputs(true);
+
+                $("#btnCreate, #btnEdit, #btnDelete").addClass("d-none");
+                $("#btnSave, #btnCancel").removeClass("d-none");
+            });
+
+            // 4. BẤM NÚT HỦY
+            $("#btnCancel").click(function () {
+                currentAction = "";
+                enableInputs(false);
+                clearFields();
+                $("#gridTable tbody tr").removeClass("selected-row");
+
+                $("#btnCreate, #btnEdit, #btnDelete").removeClass("d-none");
+                $("#btnSave, #btnCancel").addClass("d-none");
+                $("#btnEdit, #btnDelete").prop("disabled", true);
+            });
+
+            // 5. BẤM NÚT GHI (LƯU DỮ LIỆU)
+            $("#btnSave").click(function () {
+                let name = $("#computerName").val().trim();
+                if (name === "") {
+                    $("#errorComputerName").text("Vui lòng nhập tên máy!");
+                    return;
+                }
+                $("#errorComputerName").text("");
+
+                let url = currentAction === "create" ? "/Computers/Create" : `/Computers/Edit/${$("#computerId").val()}`;
+                let formData = $("#computerForm").serialize();
+
+                $.post(url, formData)
+                    .done(function () {
+                        window.location.reload();
+                    })
+                    .fail(function (xhr) {
+                        let errorMsg = xhr.responseText || "Dữ liệu cấu hình không hợp lệ!";
+                        showError(errorMsg);
+                    });
+            });
+
+            // 6. BẤM NÚT XÓA
+            $("#btnDelete").click(function () {
+                let id = $("#computerId").val();
+                if (!id) return;
+
+                if (confirm("Bạn có chắc chắn muốn xóa máy tính đang chọn không?")) {
+                    let token = $('input[name="__RequestVerificationToken"]').val();
+                    $.post(`/Computers/Delete/${id}`, { id: id, __RequestVerificationToken: token })
+                        .done(function () {
+                            window.location.reload();
+                        })
+                        .fail(function (xhr) {
+                            let errorMsg = xhr.responseText || "Không thể xóa máy tính này!";
+                            showError(errorMsg);
+                        });
+                }
+            });
+
+            // HÀM GỌI AJAX LOAD DROPDOWNS ĐỘNG TỪ SERVER
+            function loadDropdowns(computerId, currentCatId, currentAreaId) {
+                let url = `/Computers/GetDropdowns?computerId=${computerId || ""}&currentCatId=${currentCatId || ""}&currentAreaId=${currentAreaId || ""}`;
+                $.get(url, function (data) {
+                    // Load nhóm máy
+                    let catSelect = $("#computerCategoryId");
+                    catSelect.empty().append('<option value="">--không chọn--</option>');
+                    $.each(data.categories, function (i, item) {
+                        catSelect.append(`<option value="${item.id}">${item.name}</option>`);
+                    });
+                    if (currentCatId) catSelect.val(currentCatId);
+
+                    // Load khu vực
+                    let areaSelect = $("#areaId");
+                    areaSelect.empty().append('<option value="">--không chọn--</option>');
+                    $.each(data.areas, function (i, item) {
+                        areaSelect.append(`<option value="${item.id}">${item.name}</option>`);
+                    });
+                    if (currentAreaId) areaSelect.val(currentAreaId);
+                });
+            }
+
+            // HÀM ĐÓNG/MỞ KHÓA FIELD
+            function enableInputs(enable) {
+                if (enable) {
+                    // Mở khóa gõ text cho các ô Input
+                    $("#computerName, #counterName, #ipAddress, #macAddress, #serviceName").removeAttr("readonly");
+
+                    // FIX CHÍ MẠNG: Thêm #portType vào đây để cho phép bấm chuột chọn Dropdown khi Thêm/Sửa
+                    $("#computerCategoryId, #areaId, #portType, #status").css({"pointer-events": "auto", "background-color": "#fff"});
+                    $("#computerName").focus();
+
+                    // Gọi hàm kiểm tra để đóng/mở PortType & SwallowedCardCount theo Nhóm máy đang chọn
+                    toggleAcmFields();
+                } else {
+                    // Khóa gõ text
+                    $("#computerName, #counterName, #ipAddress, #macAddress, #serviceName, #swallowedCardCount").attr("readonly", "readonly");
+
+                    // Khóa chuột Dropdown select
+                    $("#computerCategoryId, #areaId, #portType, #status").css({"pointer-events": "none", "background-color": "#e9ecef"});
+                }
+            }
+
+            // HÀM KIỂM TRA ĐỂ ĐÓNG/MỞ KHÓA FIELD ACM ĐẶC THÙ
+            function toggleAcmFields() {
+                if (currentAction === "") return;
+
+                let selectedText = $("#computerCategoryId option:selected").text().toUpperCase().trim();
+                if (selectedText.includes("ACM")) {
+                    $("#portType").css({"pointer-events": "auto", "background-color": "#fff"});
+                    $("#swallowedCardCount").removeAttr("readonly");
+                } else {
+                    $("#portType").css({"pointer-events": "none", "background-color": "#e9ecef"}).val("");
+                    $("#swallowedCardCount").attr("readonly", "readonly").val("0");
+                }
+            }
+
+            // Bắt sự kiện thay đổi nhóm máy để ẩn/hiện ô ACM ngay lập tức
+            $("#computerCategoryId").change(function() {
+                toggleAcmFields();
+            });
+
+            // HÀM XÓA TRẮNG FIELD
+            function clearFields() {
+                $("#computerId, #computerName, #counterName, #ipAddress, #macAddress, #serviceName, #swallowedCardCount").val("");
+                $("#portType").val("");
+                $("#computerCategoryId, #areaId").empty().append('<option value="">-- Chọn danh mục --</option>');
+                $("#status").val("true");
+                $("#errorComputerName, #errorIpAddress").text("");
+                $("#lblCreatedBy, #lblCreatedDate, #lblModifiedBy, #lblModifiedDate").text("...");
+            }
+
+            // HÀM POPUP LỖI
+            function showError(msg) {
+                $("#alertModalMessage").text(msg);
+                new bootstrap.Modal(document.getElementById('alertModal')).show();
+            }
+        });
+    </script>
+}

@@ -1,7 +1,7 @@
-@model IEnumerable<OneSWebBooking.Models.Area>
+@model IEnumerable<OneSWebBooking.Models.ComputerCategory>
 
 @{
-    ViewData["Title"] = "Khai báo khu vực";
+    ViewData["Title"] = "Khai báo nhóm máy tính";
 }
 
 <style>
@@ -117,18 +117,6 @@
             color: #fff !important;
         }
 
-        /* ĐỔI MÀU VÀNG: Dành riêng cho các bản ghi không sử dụng */
-        .winform-table tr.row-inactive {
-            background-color: #fff2cc !important; /* Vàng nhạt */
-            color: #b71c1c !important; /* Chữ đỏ sậm nổi bật */
-        }
-
-            
-            .winform-table tr.row-inactive.selected-row {
-                background-color: #3399ff !important;
-                color: #fff !important;
-            }
-
     .winform-statusbar {
         background-color: #f0f0f0;
         border-top: 1px solid #b5b5b5;
@@ -147,15 +135,26 @@
 
         .statusbar-item:last-child {
             border-right: none;
+        }       
+
+    .winform-table tr.row-inactive {
+        background-color: #fff2cc !important; /* Màu vàng nhạt */
+        color: #b71c1c !important; /* Chữ màu đỏ đậm để nổi bật */
+    }
+
+        /* Khi click chọn dòng màu vàng thì vẫn giữ màu xanh chọn dòng của Winform */
+       .winform-table tr.row-inactive.selected-row {
+            background-color: #3399ff !important;
+            color: #fff !important;
         }
 </style>
 
 <div class="container-fluid mt-3">
     <div class="card winform-window">
         <!-- FORM CHỨA THÔNG TIN ĐỂ GỬI LÊN CONTROLLER -->
-        <form id="areaForm" method="post">
+        <form id="categoryForm" method="post">
             @Html.AntiForgeryToken()
-            <input type="hidden" id="areaId" name="Id" />
+            <input type="hidden" id="categoryId" name="Id" />
 
             <!-- 1. THANH CÔNG CỤ NÚT BẤM (TOOLBAR) -->
             <div class="winform-toolbar d-flex justify-content-between align-items-center">
@@ -187,14 +186,14 @@
 
             <!-- 2. KHUNG NHẬP THÔNG TIN (FIELDS) -->
             <div class="winform-groupbox">
-                <div class="winform-groupbox-title">Thông tin</div>
+                <div class="winform-groupbox-title">Thông tin nhóm máy</div>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <div class="d-flex align-items-center">
-                            <label class="me-2 text-nowrap" style="width: 50px;">Tên</label>
-                            <input type="text" id="areaName" name="AreaName" class="form-control form-control-sm border-secondary rounded-0" readonly required />
+                            <label class="me-2 text-nowrap" style="width: 80px;">Tên nhóm</label>
+                            <input type="text" id="categoryName" name="CategoryName" class="form-control form-control-sm border-secondary rounded-0" readonly required />
                         </div>
-                        <span class="text-danger small ms-5 d-block" id="errorAreaName"></span>
+                        <span class="text-danger small d-block" style="margin-left: 90px;" id="errorCategoryName"></span>
                     </div>
                     <div class="col-md-5">
                         <div class="d-flex align-items-center">
@@ -215,12 +214,12 @@
             </div>
         </form>
 
-        <!-- 3. BẢNG HIỂN THỊ DANH SÁCH KHU VỰC -->
+        <!-- 3. BẢNG HIỂN THỊ DANH SÁCH NHÓM MÁY TÍNH -->
         <div class="winform-grid-container">
             <table class="winform-table" id="gridTable">
                 <thead>
                     <tr>
-                        <th style="width: 30%">Tên</th>
+                        <th style="width: 30%">Tên nhóm máy</th>
                         <th style="width: 45%">Mô tả</th>
                         <th style="width: 25%">Trạng thái</th>
                     </tr>
@@ -228,17 +227,16 @@
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        <!-- THÊM CLASS ĐỘNG CHO TRẠNG THÁI HOẠT ĐỘNG/KHÔNG SỬ DỤNG -->
                         <tr class="@(item.Status ? "" : "row-inactive")"
                             data-id="@item.Id"
-                            data-name="@item.AreaName"
+                            data-name="@item.CategoryName"
                             data-desc="@item.Description"
                             data-status="@item.Status.ToString().ToLower()"
                             data-createdby="@item.CreatedBy"
                             data-createddate="@(item.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss") ?? "...")"
                             data-modifiedby="@item.ModifiedBy"
                             data-modifieddate="@(item.ModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss") ?? "...")">
-                            <td class="fw-bold">@item.AreaName</td>
+                            <td class="fw-bold">@item.CategoryName</td>
                             <td>@item.Description</td>
                             <td>@(item.Status ? "đang hoạt động" : "không sử dụng")</td>
                         </tr>
@@ -288,12 +286,12 @@
                 $(this).addClass("selected-row");
 
                 // Đổ ngược dữ liệu lên các ô nhập thông tin phía trên
-                $("#areaId").val($(this).attr("data-id"));
-                $("#areaName").val($(this).attr("data-name"));
+                $("#categoryId").val($(this).attr("data-id"));
+                $("#categoryName").val($(this).attr("data-name"));
                 $("#description").val($(this).attr("data-desc"));
                 $("#status").val($(this).attr("data-status"));
 
-                // --- FIX CHÍ MẠNG: Dùng .attr() thay vì .data() để lấy chuẩn xác 100% dữ liệu từ HTML ---
+                // Lấy audit logs xịn qua .attr() chống lỗi jquery cached
                 let createdBy = $(this).attr("data-createdby");
                 let createdDate = $(this).attr("data-createddate");
                 let modifiedBy = $(this).attr("data-modifiedby");
@@ -330,7 +328,7 @@
                 $("#btnSave, #btnCancel").removeClass("d-none");
             });
 
-            // 4. BẤM NÚT HỦY (QUAY LẠI TRẠNG THÁI BAN ĐẦU)
+            // 4. BẤM NÚT HỦY
             $("#btnCancel").click(function () {
                 currentAction = "";
                 enableInputs(false);
@@ -343,68 +341,67 @@
                 $("#btnEdit, #btnDelete").prop("disabled", true);
             });
 
-            // 5. BẤM NÚT GHI (GỌI AJAX ĐẾN CONTROLLER ĐỂ LƯU)
+            // 5. BẤM NÚT GHI (LƯU DỮ LIỆU)
             $("#btnSave").click(function () {
-                let name = $("#areaName").val().trim();
+                let name = $("#categoryName").val().trim();
                 if (name === "") {
-                    $("#errorAreaName").text("Vui lòng nhập tên khu vực!");
+                    $("#errorCategoryName").text("Vui lòng nhập tên nhóm máy!");
                     return;
                 }
-                $("#errorAreaName").text("");
+                $("#errorCategoryName").text("");
 
-                // Gửi form đi một cách chính thống (input dùng readonly nên serialize lấy dữ liệu hoàn hảo)
-                let url = currentAction === "create" ? "/Areas/Create" : `/Areas/Edit/${$("#areaId").val()}`;
-                let formData = $("#areaForm").serialize();
+                let url = currentAction === "create" ? "/ComputerCategories/Create" : `/ComputerCategories/Edit/${$("#categoryId").val()}`;
+                let formData = $("#categoryForm").serialize();
 
                 $.post(url, formData)
                     .done(function () {
                         window.location.reload();
                     })
                     .fail(function (xhr) {
-                        // Hiển thị câu báo lỗi thực tế từ Backend gửi về
-                        let errorMsg = xhr.responseText || "Tên khu vực này đã tồn tại hoặc dữ liệu không hợp lệ!";
+                        let errorMsg = xhr.responseText || "Tên nhóm máy này đã tồn tại hoặc dữ liệu không hợp lệ!";
                         showError(errorMsg);
                     });
             });
 
             // 6. BẤM NÚT XÓA
             $("#btnDelete").click(function () {
-                let id = $("#areaId").val();
+                let id = $("#categoryId").val();
                 if (!id) return;
 
-                if (confirm("Bạn có chắc chắn muốn xóa khu vực đang chọn không?")) {
+                if (confirm("Bạn có chắc chắn muốn xóa nhóm máy đang chọn không?")) {
                     let token = $('input[name="__RequestVerificationToken"]').val();
-                    $.post(`/Areas/Delete/${id}`, { id: id, __RequestVerificationToken: token })
+                    $.post(`/ComputerCategories/Delete/${id}`, { id: id, __RequestVerificationToken: token })
                         .done(function () {
                             window.location.reload();
                         })
-                        .fail(function () {
-                            showError("Không thể xóa khu vực này vì đang có máy tính hoạt động tại đây!");
+                        .fail(function (xhr) {
+                            let errorMsg = xhr.responseText || "Không thể xóa nhóm máy tính này!";
+                            showError(errorMsg);
                         });
                 }
             });
 
-            // HÀM BỔ TRỢ ĐÓNG/MỞ KHÓA Ô NHẬP LIỆU
+            // HÀM ĐÓNG/MỞ KHÓA FIELD
             function enableInputs(enable) {
                 if (enable) {
-                    $("#areaName, #description").removeAttr("readonly");
+                    $("#categoryName, #description").removeAttr("readonly");
                     $("#status").css({"pointer-events": "auto", "background-color": "#fff"});
-                    $("#areaName").focus();
+                    $("#categoryName").focus();
                 } else {
-                    $("#areaName, #description").attr("readonly", "readonly");
+                    $("#categoryName, #description").attr("readonly", "readonly");
                     $("#status").css({"pointer-events": "none", "background-color": "#e9ecef"});
                 }
             }
 
-            // HÀM XÓA TRẮNG DỮ LIỆU TRÊN CÁC Ô NHẬP
+            // HÀM XÓA TRẮNG FIELD
             function clearFields() {
-                $("#areaId, #areaName, #description").val("");
+                $("#categoryId, #categoryName, #description").val("");
                 $("#status").val("true");
                 $("#errorCategoryName").text("");
                 $("#lblCreatedBy, #lblCreatedDate, #lblModifiedBy, #lblModifiedDate").text("...");
             }
 
-            // HÀM BẬT POPUP THÔNG BÁO LỖI
+            // HÀM POPUP LỖI
             function showError(msg) {
                 $("#alertModalMessage").text(msg);
                 new bootstrap.Modal(document.getElementById('alertModal')).show();

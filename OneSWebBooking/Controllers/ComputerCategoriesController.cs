@@ -3,152 +3,133 @@ using Microsoft.EntityFrameworkCore;
 using OneSWebBooking.Models;
 using OneSWebBooking.Data;
 
-public class ComputerCategoriesController : Controller
+namespace OneSWebBooking.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public ComputerCategoriesController(ApplicationDbContext context)
+    public class ComputerCategoriesController : Controller
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    // GET: ComputerCategories
-    public async Task<IActionResult> Index()
-    {
-        return View(await _context.ComputerCategories.ToListAsync());
-    }
-
-    // GET: ComputerCategories/Details/5
-    public async Task<IActionResult> Details(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var computercategory = await _context.ComputerCategories
-            .FirstOrDefaultAsync(m => m.Id == id);
-        if (computercategory == null) return NotFound();
-
-        return View(computercategory);
-    }
-
-    // GET: ComputerCategories/Create
-    public IActionResult Create()
-    {
-        return View();
-    }
-
-    // POST: ComputerCategories/Create
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Id,CategoryName,Description,Status")] ComputerCategory computercategory)
-    {
-        if (!string.IsNullOrEmpty(computercategory.CategoryName))
+        public ComputerCategoriesController(ApplicationDbContext context)
         {
-            bool isDuplicate = await _context.ComputerCategories.AnyAsync(c => c.CategoryName.ToLower().Trim() == computercategory.CategoryName.ToLower().Trim());
-            if (isDuplicate)
-            {
-                ModelState.AddModelError("CategoryName", "Tên nhóm máy tính này đã tồn tại!");
-            }
+            _context = context;
         }
 
-        if (ModelState.IsValid)
+        // GET: ComputerCategories
+        public async Task<IActionResult> Index()
         {
+            return View(await _context.ComputerCategories.ToListAsync());
+        }
+
+        // POST: ComputerCategories/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,CategoryName,Description,Status")] ComputerCategory computercategory)
+        {
+            // Tự gán các trường Audit hệ thống trước khi Validate
             computercategory.CreatedBy = "admin";
             computercategory.CreatedDate = DateTime.Now;
+            computercategory.ModifiedBy = "admin";
+            computercategory.ModifiedDate = DateTime.Now;
 
-            _context.Add(computercategory);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-        return View(computercategory);
-    }
+            // Xóa cache và validate lại thực thể sạch
+            ModelState.Clear();
+            TryValidateModel(computercategory);
 
-    // GET: ComputerCategories/Edit/5
-    public async Task<IActionResult> Edit(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var computercategory = await _context.ComputerCategories.FindAsync(id);
-        if (computercategory == null) return NotFound();
-        return View(computercategory);
-    }
-
-    // POST: ComputerCategories/Edit/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int? id, [Bind("Id,CategoryName,Description,Status")] ComputerCategory computercategory)
-    {
-        if (id != computercategory.Id) return NotFound();
-
-        if (!string.IsNullOrEmpty(computercategory.CategoryName))
-        {
-            bool isDuplicate = await _context.ComputerCategories.AnyAsync(c => c.CategoryName.ToLower().Trim() == computercategory.CategoryName.ToLower().Trim() && c.Id != id);
-            if (isDuplicate)
+            if (!string.IsNullOrEmpty(computercategory.CategoryName))
             {
-                ModelState.AddModelError("CategoryName", "Tên nhóm máy tính này đã tồn tại!");
+                bool isDuplicate = await _context.ComputerCategories.AnyAsync(c => c.CategoryName.ToLower().Trim() == computercategory.CategoryName.ToLower().Trim());
+                if (isDuplicate)
+                {
+                    ModelState.AddModelError("CategoryName", "Tên nhóm máy tính này đã tồn tại trong hệ thống!");
+                }
             }
+
+            if (ModelState.IsValid)
+            {
+                _context.Add(computercategory);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true }); // Trả về JSON cho AJAX
+            }
+
+            // Trả về lỗi 400 kèm câu lỗi đầu tiên
+            var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Dữ liệu không hợp lệ!";
+            return BadRequest(firstError);
         }
 
-        if (ModelState.IsValid)
+        // POST: ComputerCategories/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int? id, [Bind("Id,CategoryName,Description,Status")] ComputerCategory computercategory)
         {
-            try
+            if (id != computercategory.Id) return NotFound();
+
+            // Lấy thông tin bản ghi cũ từ DB để giữ nguyên ngày tạo/người tạo
+            var existingCategory = await _context.ComputerCategories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+            if (existingCategory == null) return NotFound();
+
+            computercategory.CreatedBy = existingCategory.CreatedBy;
+            computercategory.CreatedDate = existingCategory.CreatedDate;
+            computercategory.ModifiedBy = "admin_edit";
+            computercategory.ModifiedDate = DateTime.Now;
+
+            ModelState.Clear();
+            TryValidateModel(computercategory);
+
+            if (!string.IsNullOrEmpty(computercategory.CategoryName))
             {
-                _context.Entry(computercategory).Property(x => x.CreatedBy).IsModified = false;
-                _context.Entry(computercategory).Property(x => x.CreatedDate).IsModified = false;
+                bool isDuplicate = await _context.ComputerCategories.AnyAsync(c => c.CategoryName.ToLower().Trim() == computercategory.CategoryName.ToLower().Trim() && c.Id != id);
+                if (isDuplicate)
+                {
+                    ModelState.AddModelError("CategoryName", "Tên nhóm máy tính này đã tồn tại trong hệ thống!");
+                }
+            }
 
-                computercategory.ModifiedBy = "admin_edit";
-                computercategory.ModifiedDate = DateTime.Now;
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(computercategory);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true }); // Trả về JSON thành công
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ComputerCategoryExists(computercategory.Id)) return NotFound();
+                    else throw;
+                }
+            }
 
-                _context.Update(computercategory);
+            var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Dữ liệu không hợp lệ!";
+            return BadRequest(firstError);
+        }
+
+        // POST: ComputerCategories/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int? id)
+        {
+            if (id == null) return NotFound();
+
+            // Kiểm tra xem nhóm này đã được dùng ở máy tính nào chưa
+            bool isUsed = await _context.Computers.AnyAsync(c => c.ComputerCategoryId == id);
+            if (isUsed)
+            {
+                return BadRequest("Không thể xóa nhóm máy tính này vì đang có máy tính hoạt động thuộc nhóm!");
+            }
+
+            var computercategory = await _context.ComputerCategories.FindAsync(id);
+            if (computercategory != null)
+            {
+                _context.ComputerCategories.Remove(computercategory);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ComputerCategoryExists(computercategory.Id)) return NotFound();
-                else throw;
-            }
-            return RedirectToAction(nameof(Index));
+
+            return Json(new { success = true }); // Trả về JSON cho AJAX xóa
         }
-        return View(computercategory);
-    }
 
-    // GET: ComputerCategories/Delete/5
-    public async Task<IActionResult> Delete(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var computercategory = await _context.ComputerCategories
-            .FirstOrDefaultAsync(m => m.Id == id);
-        if (computercategory == null) return NotFound();
-
-        return View(computercategory);
-    }
-
-    // POST: ComputerCategories/Delete/5
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int? id)
-    {
-        if (id == null) return NotFound();
-
-        bool isUsed = await _context.Computers.AnyAsync(c => c.ComputerCategoryId == id);
-        if (isUsed)
+        private bool ComputerCategoryExists(int? id)
         {
-            TempData["ErrorMessage"] = "Không thể xóa nhóm máy tính này vì đang có máy tính hoạt động thuộc nhóm!";
-            return RedirectToAction(nameof(Index));
+            return _context.ComputerCategories.Any(e => e.Id == id);
         }
-
-        var computercategory = await _context.ComputerCategories.FindAsync(id);
-        if (computercategory != null)
-        {
-            _context.ComputerCategories.Remove(computercategory);
-            await _context.SaveChangesAsync();
-        }
-
-        return RedirectToAction(nameof(Index));
-    }
-
-    private bool ComputerCategoryExists(int? id)
-    {
-        return _context.ComputerCategories.Any(e => e.Id == id);
     }
 }

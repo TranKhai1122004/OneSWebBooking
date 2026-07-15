@@ -1,209 +1,219 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using OneSWebBooking.Models;
 using OneSWebBooking.Data;
 
-public class ComputersController : Controller
+namespace OneSWebBooking.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public ComputersController(ApplicationDbContext context)
+    public class ComputersController : Controller
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    // GET: Computers
-    public async Task<IActionResult> Index()
-    {
-        var computers = _context.Computers
-            .Include(c => c.ComputerCategory)
-            .Include(c => c.Area);
-        return View(await computers.ToListAsync());
-    }
-
-    // GET: Computers/Details/5
-    public async Task<IActionResult> Details(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var computer = await _context.Computers
-            .Include(c => c.ComputerCategory)
-            .Include(c => c.Area)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (computer == null) return NotFound();
-
-        return View(computer);
-    }
-
-    // GET: Computers/Create
-    public IActionResult Create()
-    {
-        ViewData["ComputerCategoryId"] = new SelectList(_context.ComputerCategories.Where(x => x.Status == true), "Id", "CategoryName");
-        ViewData["AreaId"] = new SelectList(_context.Areas.Where(x => x.Status == true), "Id", "AreaName");
-        return View();
-    }
-
-    // POST: Computers/Create
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Id,ComputerName,CounterName,IpAddress,MacAddress,ServiceName,ComputerCategoryId,AreaId,PortType,SwallowedCardCount,Status")] Computer computer)
-    {
-        if (!string.IsNullOrEmpty(computer.ComputerName))
+        public ComputersController(ApplicationDbContext context)
         {
-            // Check trùng tên máy
-            bool isNameDuplicate = await _context.Computers.AnyAsync(c => c.ComputerName.ToLower().Trim() == computer.ComputerName.ToLower().Trim());
-            if (isNameDuplicate)
-            {
-                ModelState.AddModelError("ComputerName", "Tên máy tính này đã tồn tại!");
-            }
+            _context = context;
         }
 
-        if (!string.IsNullOrEmpty(computer.IpAddress))
+        // GET: Computers
+        public async Task<IActionResult> Index()
         {
-            // Check trùng IP
-            bool isIpDuplicate = await _context.Computers.AnyAsync(c => c.IpAddress.Trim() == computer.IpAddress.Trim());
-            if (isIpDuplicate)
-            {
-                ModelState.AddModelError("IpAddress", "Địa chỉ IP này đã được gán cho máy khác!");
-            }
+            var computers = _context.Computers
+                .Include(c => c.ComputerCategory)
+                .Include(c => c.Area);
+            return View(await computers.ToListAsync());
         }
 
-        if (ModelState.IsValid)
+        // API GET: Lấy danh sách dropdown động trả về dạng JSON cho AJAX
+        [HttpGet]
+        public async Task<IActionResult> GetDropdowns(int? computerId, int? currentCatId, int? currentAreaId)
         {
+            // Lấy nhóm máy: Lấy danh sách đang hoạt động (Status == true) cộng thêm chính nó nếu đang xem/sửa
+            var categories = await _context.ComputerCategories
+                .Where(x => x.Status == true || x.Id == currentCatId)
+                .Select(x => new { id = x.Id, name = x.CategoryName })
+                .ToListAsync();
+
+            // Lấy khu vực: Lấy danh sách đang hoạt động (Status == true) cộng thêm chính nó nếu đang xem/sửa
+            var areas = await _context.Areas
+                .Where(x => x.Status == true || x.Id == currentAreaId)
+                .Select(x => new { id = x.Id, name = x.AreaName })
+                .ToListAsync();
+
+            return Json(new { categories, areas });
+        }
+
+        // POST: Computers/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,ComputerName,CounterName,IpAddress,MacAddress,ServiceName,ComputerCategoryId,AreaId,PortType,SwallowedCardCount,Status")] Computer computer)
+        {
+            // Điền mặc định thông tin Audit hệ thống
             computer.CreatedBy = "admin";
             computer.CreatedDate = DateTime.Now;
+            computer.ModifiedBy = "admin";
+            computer.ModifiedDate = DateTime.Now;
 
-            _context.Add(computer);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+            // FIX BUG 2: Chạy validate model mặc định trước
+            ModelState.Clear();
+            TryValidateModel(computer);
 
-        ViewData["ComputerCategoryId"] = new SelectList(_context.ComputerCategories.Where(x => x.Status == true), "Id", "CategoryName", computer.ComputerCategoryId);
-        ViewData["AreaId"] = new SelectList(_context.Areas.Where(x => x.Status == true), "Id", "AreaName", computer.AreaId);
-        return View(computer);
-    }
+            // Kiểm tra logic ACM đặc thù và thêm lỗi sau khi đã Clear
+            var category = await _context.ComputerCategories.FindAsync(computer.ComputerCategoryId);
+            bool isAcm = category != null && category.CategoryName.ToUpper().Contains("ACM");
 
-    // GET: Computers/Edit/5 (HÀM GET - ĐÃ SỬA DROPDOWN)
-    public async Task<IActionResult> Edit(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var computer = await _context.Computers.FindAsync(id);
-        if (computer == null) return NotFound();
-
-        // Nạp Dropdown lấy cả Group/Area hiện tại dù nó đã bị khóa (Status == false)
-        ViewData["ComputerCategoryId"] = new SelectList(
-            _context.ComputerCategories.Where(x => x.Status == true || x.Id == computer.ComputerCategoryId),
-            "Id", "CategoryName", computer.ComputerCategoryId);
-
-        ViewData["AreaId"] = new SelectList(
-            _context.Areas.Where(x => x.Status == true || x.Id == computer.AreaId),
-            "Id", "AreaName", computer.AreaId);
-
-        return View(computer);
-    }
-
-    // POST: Computers/Edit/5 (HÀM POST - ĐÃ SỬA DROPDOWN)
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int? id, [Bind("Id,ComputerName,CounterName,IpAddress,MacAddress,ServiceName,ComputerCategoryId,AreaId,PortType,SwallowedCardCount,Status")] Computer computer)
-    {
-        if (id != computer.Id) return NotFound();
-
-        if (!string.IsNullOrEmpty(computer.ComputerName))
-        {
-            // Check trùng tên khi sửa (loại trừ chính nó)
-            bool isNameDuplicate = await _context.Computers.AnyAsync(c => c.ComputerName.ToLower().Trim() == computer.ComputerName.ToLower().Trim() && c.Id != id);
-            if (isNameDuplicate)
+            if (isAcm)
             {
-                ModelState.AddModelError("ComputerName", "Tên máy tính này đã tồn tại!");
+                if (string.IsNullOrEmpty(computer.PortType))
+                {
+                    ModelState.AddModelError("PortType", "Nhóm máy ACM yêu cầu phải nhập Loại cổng!");
+                }
+                if (computer.SwallowedCardCount < 0)
+                {
+                    ModelState.AddModelError("SwallowedCardCount", "Nhóm máy ACM yêu cầu nhập Số lượng thẻ nuốt hợp lệ!");
+                }
             }
-        }
-
-        if (!string.IsNullOrEmpty(computer.IpAddress))
-        {
-            // Check trùng IP khi sửa (loại trừ chính nó)
-            bool isIpDuplicate = await _context.Computers.AnyAsync(c => c.IpAddress.Trim() == computer.IpAddress.Trim() && c.Id != id);
-            if (isIpDuplicate)
+            else
             {
-                ModelState.AddModelError("IpAddress", "Địa chỉ IP này đã được gán cho máy khác!");
+                // Nếu không phải ACM, xóa trắng 2 trường này để tránh lưu rác vào DB
+                computer.PortType = null;
+                computer.SwallowedCardCount = 0;
             }
-        }
 
-        if (ModelState.IsValid)
-        {
-            try
+            // Check trùng tên máy
+            if (!string.IsNullOrEmpty(computer.ComputerName))
             {
-                _context.Entry(computer).Property(x => x.CreatedBy).IsModified = false;
-                _context.Entry(computer).Property(x => x.CreatedDate).IsModified = false;
+                bool isNameDuplicate = await _context.Computers.AnyAsync(c => c.ComputerName.ToLower().Trim() == computer.ComputerName.ToLower().Trim());
+                if (isNameDuplicate)
+                {
+                    ModelState.AddModelError("ComputerName", "Tên máy tính này đã tồn tại!");
+                }
+            }
 
-                computer.ModifiedBy = "admin_edit";
-                computer.ModifiedDate = DateTime.Now;
+            // Check trùng IP
+            if (!string.IsNullOrEmpty(computer.IpAddress))
+            {
+                bool isIpDuplicate = await _context.Computers.AnyAsync(c => c.IpAddress.Trim() == computer.IpAddress.Trim());
+                if (isIpDuplicate)
+                {
+                    ModelState.AddModelError("IpAddress", "Địa chỉ IP này đã được gán cho máy khác!");
+                }
+            }
 
-                _context.Update(computer);
+            if (ModelState.IsValid)
+            {
+                _context.Add(computer);
                 await _context.SaveChangesAsync();
+                return Json(new { success = true });
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ComputerExists(computer.Id)) return NotFound();
-                else throw;
-            }
-            return RedirectToAction(nameof(Index));
+
+            var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Dữ liệu không hợp lệ!";
+            return BadRequest(firstError);
         }
 
-        // Nếu lỗi form, nạp lại Dropdown an toàn chứa cả phần tử hiện tại
-        ViewData["ComputerCategoryId"] = new SelectList(
-            _context.ComputerCategories.Where(x => x.Status == true || x.Id == computer.ComputerCategoryId),
-            "Id", "CategoryName", computer.ComputerCategoryId);
-
-        ViewData["AreaId"] = new SelectList(
-            _context.Areas.Where(x => x.Status == true || x.Id == computer.AreaId),
-            "Id", "AreaName", computer.AreaId);
-
-        return View(computer);
-    }
-
-    // GET: Computers/Delete/5
-    public async Task<IActionResult> Delete(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var computer = await _context.Computers
-            .Include(c => c.ComputerCategory)
-            .Include(c => c.Area)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (computer == null) return NotFound();
-
-        return View(computer);
-    }
-
-    // POST: Computers/Delete/5
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var computer = await _context.Computers.FindAsync(id);
-        if (computer == null) return NotFound();
-
-        if (computer.Status == true)
+        // POST: Computers/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int? id, [Bind("Id,ComputerName,CounterName,IpAddress,MacAddress,ServiceName,ComputerCategoryId,AreaId,PortType,SwallowedCardCount,Status")] Computer computer)
         {
-            TempData["ErrorMessage"] = "Không thể xóa máy tính này vì máy đang ở trạng thái 'Đang hoạt động'!";
-            return RedirectToAction(nameof(Index));
+            if (id != computer.Id) return NotFound();
+
+            var existingComputer = await _context.Computers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+            if (existingComputer == null) return NotFound();
+
+            // Giữ lại audit cũ
+            computer.CreatedBy = existingComputer.CreatedBy;
+            computer.CreatedDate = existingComputer.CreatedDate;
+            computer.ModifiedBy = "admin_edit";
+            computer.ModifiedDate = DateTime.Now;
+
+            // FIX BUG 2: Chạy validate model mặc định trước
+            ModelState.Clear();
+            TryValidateModel(computer);
+
+            // Kiểm tra logic ACM đặc thù khi sửa sau khi đã Clear
+            var category = await _context.ComputerCategories.FindAsync(computer.ComputerCategoryId);
+            bool isAcm = category != null && category.CategoryName.ToUpper().Contains("ACM");
+
+            if (isAcm)
+            {
+                if (string.IsNullOrEmpty(computer.PortType))
+                {
+                    ModelState.AddModelError("PortType", "Nhóm máy ACM yêu cầu phải nhập Loại cổng!");
+                }
+                if (computer.SwallowedCardCount < 0)
+                {
+                    ModelState.AddModelError("SwallowedCardCount", "Nhóm máy ACM yêu cầu nhập Số lượng thẻ nuốt hợp lệ!");
+                }
+            }
+            else
+            {
+                computer.PortType = null;
+                computer.SwallowedCardCount = 0;
+            }
+
+            // Check trùng tên khi sửa (loại trừ chính nó)
+            if (!string.IsNullOrEmpty(computer.ComputerName))
+            {
+                bool isNameDuplicate = await _context.Computers.AnyAsync(c => c.ComputerName.ToLower().Trim() == computer.ComputerName.ToLower().Trim() && c.Id != id);
+                if (isNameDuplicate)
+                {
+                    ModelState.AddModelError("ComputerName", "Tên máy tính này đã tồn tại!");
+                }
+            }
+
+            // FIX BUG 1: Thêm check trùng IP khi sửa (loại trừ chính nó)
+            if (!string.IsNullOrEmpty(computer.IpAddress))
+            {
+                bool isIpDuplicate = await _context.Computers.AnyAsync(c => c.IpAddress.Trim() == computer.IpAddress.Trim() && c.Id != id);
+                if (isIpDuplicate)
+                {
+                    ModelState.AddModelError("IpAddress", "Địa chỉ IP này đã được gán cho máy khác!");
+                }
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(computer);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true });
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ComputerExists(computer.Id)) return NotFound();
+                    else throw;
+                }
+            }
+
+            var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Dữ liệu không hợp lệ!";
+            return BadRequest(firstError);
         }
 
-        _context.Computers.Remove(computer);
-        await _context.SaveChangesAsync();
+        // POST: Computers/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int? id)
+        {
+            if (id == null) return NotFound();
 
-        return RedirectToAction(nameof(Index));
-    }
+            var computer = await _context.Computers.FindAsync(id);
+            if (computer == null) return NotFound();
 
-    private bool ComputerExists(int? id)
-    {
-        return _context.Computers.Any(e => e.Id == id);
+            // Ràng buộc nghiệp vụ cũ: Máy đang hoạt động (Status = true) thì không được xóa
+            if (computer.Status)
+            {
+                return BadRequest("Không thể xóa máy tính này vì máy đang ở trạng thái 'Đang hoạt động'!");
+            }
+
+            _context.Computers.Remove(computer);
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
+
+        private bool ComputerExists(int? id)
+        {
+            return _context.Computers.Any(e => e.Id == id);
+        }
     }
 }
