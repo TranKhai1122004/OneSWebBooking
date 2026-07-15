@@ -2,100 +2,125 @@
     ViewData["Title"] = "Trang chủ";
 }
 
-<div class="d-flex" style="min-height: 85vh;">
+<style>
+    /* Ép mọi nút trong bảng 8 nút cùng 1 chiều cao cố định, canh giữa icon+chữ theo chiều dọc
+           -> không còn nút nào thò cao / thụt thấp hơn nút khác dù chữ dài ngắn khác nhau */
+    #mainPanel .panel-btn {
+        width: 100%;
+        height: 100%;
+        min-height: 68px;
+        display: flex;
+        align-items: center;
+        A text-align: left;
+    }
+</style>
 
-    <!-- KHỐI CHÍNH: logo và khung nút giờ ĐỘC LẬP với nhau -->
-    <div class="flex-grow-1 position-relative bg-white" style="min-height: 85vh;">
+<div id="contentRow" class="d-flex flex-grow-1 position-relative" style="min-height: 0; overflow: hidden;">
 
-        <!-- Logo oneS: ghim sát trái, dịch xuống 1 chút để mép trên chữ "SMARTCARD SYSTEM" ngang hàng mép trên khung nút -->
-        <div class="position-absolute" style="left: 30px; top: 110px;">
+    <!-- KHỐI CHÍNH: chỉ còn logo, panel nút đã tách ra ngoài để canh giữa toàn vùng -->
+    <div class="flex-grow-1 position-relative bg-white" style="min-height: 0;">
+        <div id="logoBlock" class="position-absolute" style="left: 30px; top: 30px;">
             <h1 class="display-4 fw-bold text-danger m-0" style="font-family: 'Arial Black', sans-serif;">one<span class="text-primary">S</span></h1>
             <div class="badge bg-primary text-wrap fw-bold px-3 py-2 mt-1" style="font-size: 11px; letter-spacing: 1px;">
                 oneS SMARTCARD SYSTEM
             </div>
         </div>
-
-        <!-- Bảng 8 nút: vẫn tự căn giữa toàn bộ khối chính, không bị ảnh hưởng bởi logo -->
-        <div class="d-flex align-items-center justify-content-center h-100" style="min-height: 85vh;">
-            <div class="p-4 border rounded shadow-sm" style="background-color: #d6d6d6; width: 620px;">
-                <div class="row g-3">
-                    <div class="col-6">
-                        <button class="btn btn-light w-100 py-3 text-start border shadow-sm fw-bold d-flex align-items-center">
-                            <i class="fas fa-cash-register text-warning fs-4 me-3"></i> Bán dịch vụ (F5)
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-light w-100 py-3 text-start border shadow-sm fw-bold d-flex align-items-center">
-                            <i class="fas fa-search text-success fs-4 me-3"></i> Tìm kiếm hóa đơn (F10)
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-light w-100 py-3 text-start border shadow-sm fw-bold d-flex align-items-center">
-                            <i class="fas fa-undo text-primary fs-4 me-3"></i> Hoàn dịch vụ (F7)
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-light w-100 py-3 text-start border shadow-sm fw-bold d-flex align-items-center">
-                            <i class="fas fa-hand-holding-usd text-success fs-4 me-3"></i> Nạp tiền (F11)
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-light w-100 py-3 text-start border shadow-sm fw-bold d-flex align-items-center">
-                            <i class="fas fa-user-check text-info fs-4 me-3"></i> Tra cứu tài khoản
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-light w-100 py-3 text-start border shadow-sm fw-bold d-flex align-items-center">
-                            <i class="fas fa-print text-secondary fs-4 me-3"></i> Bán dịch vụ bên trong khu
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-light w-100 py-3 text-start border shadow-sm fw-bold d-flex align-items-center">
-                            <i class="fas fa-id-card-alt text-success fs-4 me-3"></i> Checkin sử dụng dịch vụ (F3)
-                        </button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-light w-100 py-3 text-start border shadow-sm fw-bold d-flex align-items-center">
-                            <i class="fas fa-key text-danger fs-4 me-3"></i> Kết thúc ca
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- CỘT PHẢI: giữ nguyên như lần trước -->
-    <div class="bg-light border-start p-3 d-flex flex-column justify-content-between" style="width: 200px; flex-shrink: 0;">
+    <!-- CỘT PHẢI -->
+    <div class="bg-light border-start p-3 d-flex flex-column justify-content-between shadow-sm" style="width: 200px; flex-shrink: 0; font-size: 11px;">
         <div>
-            <div class="mb-4">
-                <label class="form-label fw-bold text-muted small">Site hiện hành:</label>
-                <select class="form-select form-select-sm border-primary fw-bold">
-                    <option selected>Núi Thần Tài</option>
-                    <option>Vinpearl land Phú Quốc</option>
-                    <option>Cổng chính C1</option>
-                </select>
-            </div>
-            <div class="border-top pt-3">
-                <h6 class="fw-bold text-center text-primary border-bottom pb-2">== Núi Thần Tài ==</h6>
-                <div class="card bg-white border-0 shadow-sm mt-3">
-                    <div class="card-body" style="font-size: 12px; line-height: 1.6;">
-                        <p class="mb-2"><strong>Thông tin hỗ trợ liên hệ theo thứ tự sau:</strong></p>
-                        <ol class="ps-3 mb-3">
-                            <li>Lỗi máy tính/mạng: <strong class="text-danger">IT Dept</strong></li>
-                            <li>
-                                Hỗ trợ phần mềm SmartCard:
-                                <ul class="ps-3 mt-1 text-muted">
-                                    <li>Hotline: Mr. Lương 0869991139</li>
-                                    <li>Email: <span>luongdv</span>&#64;<span>dhcgroup.vn</span></li>
-                                </ul>
-                            </li>
-                        </ol>
-                    </div>
+            <h6 class="fw-bold text-center text-primary border-bottom pb-2" style="font-size: 12px; margin-bottom: 10px;">== Núi Thần Tài ==</h6>
+            <div class="card bg-white border-0 shadow-sm mt-2">
+                <div class="card-body p-2" style="font-size: 10.5px; line-height: 1.5;">
+                    <p class="mb-1"><strong>Thông tin hỗ trợ liên hệ theo thứ tự sau:</strong></p>
+                    <ol class="ps-3 mb-1">
+                        <li class="mb-1">Lỗi máy tính/mạng: <strong class="text-danger">IT Dept</strong></li>
+                        <li>
+                            Hỗ trợ phần mềm SmartCard:
+                            <ul class="ps-3 mt-1 text-muted" style="list-style-type: disc;">
+                                <li>Hotline: Mr. Lương 0869991139</li>
+                                <li style="word-break: break-all;">Email: <span>luongdv</span>&#64;<span>dhcgroup.vn</span></li>
+                            </ul>
+                        </li>
+                    </ol>
                 </div>
             </div>
         </div>
-        <div class="text-center text-muted small border-top pt-3">
+        <div class="text-center text-muted border-top pt-2" style="font-size: 9.5px;">
             <span>oneS Client Service Engine v2.0</span>
         </div>
     </div>
+
+    <!-- Bảng 8 nút: absolute, canh đúng tâm của TOÀN BỘ contentRow (kể cả cột phải)
+         -> luôn cách đều 4 góc, không lệch vì cột phải như trước -->
+    <div id="mainPanel" class="position-absolute p-4 border rounded shadow-sm"
+         style="background-color: #d6d6d6; width: 620px; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="row g-3">
+            <div class="col-6 d-flex">
+                <button class="btn btn-light panel-btn border shadow-sm fw-bold">
+                    <i class="fas fa-cash-register text-warning fs-4 me-3"></i> Bán dịch vụ (F5)
+                </button>
+            </div>
+            <div class="col-6 d-flex">
+                <button class="btn btn-light panel-btn border shadow-sm fw-bold">
+                    <i class="fas fa-search text-success fs-4 me-3"></i> Tìm kiếm hóa đơn (F10)
+                </button>
+            </div>
+            <div class="col-6 d-flex">
+                <button class="btn btn-light panel-btn border shadow-sm fw-bold">
+                    <i class="fas fa-undo text-primary fs-4 me-3"></i> Hoàn dịch vụ (F7)
+                </button>
+            </div>
+            <div class="col-6 d-flex">
+                <button class="btn btn-light panel-btn border shadow-sm fw-bold">
+                    <i class="fas fa-hand-holding-usd text-success fs-4 me-3"></i> Nạp tiền (F11)
+                </button>
+            </div>
+            <div class="col-6 d-flex">
+                <button class="btn btn-light panel-btn border shadow-sm fw-bold">
+                    <i class="fas fa-user-check text-info fs-4 me-3"></i> Tra cứu tài khoản
+                </button>
+            </div>
+            <div class="col-6 d-flex">
+                <button class="btn btn-light panel-btn border shadow-sm fw-bold">
+                    <i class="fas fa-print text-secondary fs-4 me-3"></i> Bán dịch vụ bên trong khu (F12)
+                </button>
+            </div>
+            <div class="col-6 d-flex">
+                <button class="btn btn-light panel-btn border shadow-sm fw-bold">
+                    <i class="fas fa-id-card-alt text-success fs-4 me-3"></i> Checkin sử dụng dịch vụ (F3)
+                </button>
+            </div>
+            <div class="col-6 d-flex">
+                <button class="btn btn-light panel-btn border shadow-sm fw-bold">
+                    <i class="fas fa-key text-danger fs-4 me-3"></i> Kết thúc ca
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        function alignLogoWithPanel() {
+            var row = document.getElementById('contentRow');
+            var panel = document.getElementById('mainPanel');
+            var logo = document.getElementById('logoBlock');
+            if (!row || !panel || !logo) return;
+
+            
+            var LOGO_LIFT = 70;
+
+            var rowRect = row.getBoundingClientRect();
+            var panelRect = panel.getBoundingClientRect();
+            var topOffset = panelRect.top - rowRect.top - LOGO_LIFT;
+
+            logo.style.top = topOffset + 'px';
+        }
+
+        alignLogoWithPanel();
+        window.addEventListener('load', alignLogoWithPanel);
+        window.addEventListener('resize', alignLogoWithPanel);
+    </script>
+}

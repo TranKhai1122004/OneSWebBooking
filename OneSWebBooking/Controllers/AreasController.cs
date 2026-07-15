@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OneSWebBooking.Models;
 using OneSWebBooking.Data;
+using OneSWebBooking.Models;
+using System.Diagnostics;
 
 public class AreasController : Controller
 {
@@ -12,11 +13,24 @@ public class AreasController : Controller
         _context = context;
     }
 
-    // GET: Areas (trang duy nhất có giao diện, Create/Edit xử lý qua modal + AJAX)
+    //GET: Areas(trang duy nhất có giao diện, Create/Edit xử lý qua modal + AJAX)
     public async Task<IActionResult> Index()
     {
         return View(await _context.Areas.ToListAsync());
+
     }
+
+    //public async Task<IActionResult> Index()
+    //{
+    //    var sw = Stopwatch.StartNew();
+
+    //    var areas = await _context.Areas.ToListAsync();
+
+    //    sw.Stop();
+    //    Console.WriteLine($"ToListAsync: {sw.ElapsedMilliseconds} ms");
+
+    //    return View(areas);
+    //}
 
     // POST: Areas/Create (AJAX, trả JSON)
     [HttpPost]

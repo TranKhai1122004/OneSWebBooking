@@ -7,27 +7,51 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
+            /* Ép toàn trang chiếm trọn 100% chiều cao màn hình, không sinh scroll tổng */
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow: hidden;
+                background-color: #f0f0f0;
+            }
+
+            /* Body dùng flex dọc, cao đúng 100vh -> khối giữa co giãn theo chiều cao ribbon,
+                       không còn hard-code calc(100vh - Npx) nên không bị cắt khi ribbon đổi chiều cao */
             body {
                 font-family: Arial, sans-serif;
-                background-color: #f0f0f0;
                 font-size: 14px;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
             }
-            /* Style thanh Menu Ribbon xám chuẩn app desktop */
+
+            .copyright-header {
+                background-color: #fff;
+                font-size: 12px;
+                border-bottom: 1px solid #e0e0e0;
+                flex-shrink: 0;
+            }
+
+            /* Thanh Menu (Hệ thống, Khách đoàn...) */
             .smartcard-menu {
                 background-color: #f5f5f5;
                 border-bottom: 1px solid #ccc;
                 padding: 0;
+                flex-shrink: 0;
             }
+
             .navbar-nav .nav-link {
                 color: #000 !important;
                 padding: 8px 15px !important;
                 font-weight: 500;
                 border-right: 1px solid #e0e0e0;
             }
-            .navbar-nav .nav-link:hover {
-                background-color: #e0e0e0;
-            }
-            /* Dropdown của menu Hệ thống */
+
+                .navbar-nav .nav-link:hover {
+                    background-color: #e0e0e0;
+                }
+
             .dropdown-menu {
                 border-radius: 0;
                 border: 1px solid #999;
@@ -35,47 +59,136 @@
                 font-size: 13px;
                 padding: 0;
             }
+
             .dropdown-item {
                 padding: 8px 20px;
                 border-bottom: 1px solid #f0f0f0;
             }
-            .dropdown-item:hover {
-                background-color: #3399ff;
-                color: white !important;
+
+                .dropdown-item:hover {
+                    background-color: #3399ff;
+                    color: white !important;
+                }
+
+            /* ==== RIBBON TOOLBAR (khối nút icon + Site, giống ảnh mẫu) ==== */
+            .ribbon-toolbar {
+                background: linear-gradient(to bottom, #fbfbfb, #e6e6e6);
+                border-bottom: 1px solid #bbb;
+                box-shadow: 0 3px 5px rgba(0, 0, 0, 0.12); /* đổ bóng phía dưới ribbon */
+                padding: 8px 15px 4px 15px;
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                flex-shrink: 0;
             }
-            /* Footer thông tin hệ thống phía dưới cùng */
+
+            .ribbon-groups {
+                display: flex;
+                align-items: flex-start;
+            }
+
+            .ribbon-group {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .ribbon-buttons {
+                display: flex;
+                gap: 2px;
+                height: 62px; /* chiều cao CỐ ĐỊNH, giống nhau cho mọi nhóm -> gạch chân luôn thẳng hàng */
+            }
+
+            .ribbon-btn {
+                background: transparent;
+                border: 1px solid transparent;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center; /* căn giữa dọc, nút 1 dòng hay 2 dòng chữ đều cân đối như nhau */
+                width: 66px;
+                height: 100%;
+                padding: 4px 2px;
+                font-size: 10.5px;
+                line-height: 1.15;
+                color: #333;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+
+                .ribbon-btn i {
+                    font-size: 20px;
+                    margin-bottom: 3px;
+                    flex-shrink: 0;
+                }
+
+                .ribbon-btn:hover {
+                    background-color: #dceeff;
+                    border-color: #99c2ff;
+                }
+
+            .ribbon-divider {
+                width: 1px;
+                align-self: stretch;
+                background-color: #ccc;
+                margin: 2px 12px 14px 12px;
+            }
+
+            .ribbon-group-label {
+                font-size: 10.5px;
+                color: #777;
+                margin-top: 2px;
+                padding-top: 3px;
+                border-top: 1px solid #ccc;
+                width: 100%;
+                text-align: center;
+            }
+
+            .ribbon-site {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding-top: 8px;
+                white-space: nowrap;
+            }
+
+            /* Footer bám đáy, có đổ bóng nhẹ lên trên */
             .smartcard-footer {
                 background-color: #f5f5f5;
                 border-top: 1px solid #ccc;
                 font-size: 12px;
-                padding: 5px 15px;
+                padding: 6px 15px;
                 color: #333;
-                position: fixed;
-                bottom: 0;
+                box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.08);
                 width: 100%;
+                flex-shrink: 0;
+            }
+
+            /* Khối nội dung giữa: co giãn hết phần còn lại, min-height:0 để flex-child
+                       không bị tràn ra ngoài khiến trang bị cắt mất một đoạn */
+            .content-wrapper {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+                overflow: hidden;
             }
     </style>
 </head>
 <body>
     <header>
-        <!-- Tên phần mềm chuẩn trên tiêu đề ảnh -->
-        <div class="bg-white px-3 py-1 d-flex justify-content-between border-bottom text-muted" style="font-size: 12px;">
-            <span>Hệ thống quản lý thẻ oneS - oneS SmartCard System  © Copy right by CS-Solution 2020 V2.0</span>
-        </div>
 
         <!-- Thanh điều hướng Menu -->
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm smartcard-menu box-shadow">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm smartcard-menu">
             <div class="container-fluid">
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <!-- Nút Home quay về trang chủ -->
                         <li class="nav-item">
                             <a class="nav-link text-dark" href="/">
                                 <i class="fas fa-home text-primary"></i> Home
                             </a>
                         </li>
 
-                        <!-- Dropdown Hệ thống (Có 3 chức năng của mình) -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-dark" href="#" id="systemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Hệ thống
@@ -87,7 +200,6 @@
                                 <li><hr class="dropdown-divider" style="margin: 0;"></li>
                                 <li><a class="dropdown-item text-muted disabled" href="#">Thông số hệ thống</a></li>
 
-                                <!-- 3 Chức năng chính kết nối trực tiếp vào Controller của m -->
                                 <li><a class="dropdown-item fw-bold text-primary" asp-controller="Areas" asp-action="Index"><i class="fas fa-map-marker-alt mr-2"></i> Danh sách khu vực</a></li>
                                 <li><a class="dropdown-item fw-bold text-primary" asp-controller="ComputerCategories" asp-action="Index"><i class="fas fa-tags mr-2"></i> Phân loại máy tính</a></li>
                                 <li><a class="dropdown-item fw-bold text-primary" asp-controller="Computers" asp-action="Index"><i class="fas fa-desktop mr-2"></i> Danh sách máy tính</a></li>
@@ -101,7 +213,6 @@
                             </ul>
                         </li>
 
-                        <!-- Các menu không liên quan khác để trống (Disabled) theo đúng yêu cầu -->
                         <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Khách đoàn</a></li>
                         <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Bán hàng</a></li>
                         <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Thu ngân</a></li>
@@ -115,15 +226,63 @@
                 </div>
             </div>
         </nav>
+
+        <!-- RIBBON TOOLBAR: các nhóm nút icon + Site (giống ảnh mẫu) -->
+        <div class="ribbon-toolbar">
+            <div class="ribbon-groups">
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button class="ribbon-btn"><i class="fas fa-id-card text-primary"></i>Gia hạn thẻ</button>
+                        <button class="ribbon-btn"><i class="fas fa-undo text-primary"></i>Hoàn dịch vụ đã bán</button>
+                    </div>
+                    <div class="ribbon-group-label">Xử lý thẻ, dịch vụ</div>
+                </div>
+
+                <div class="ribbon-divider"></div>
+
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button class="ribbon-btn"><i class="fas fa-file-invoice-dollar text-primary"></i>Tìm kiếm hóa đơn</button>
+                        <button class="ribbon-btn"><i class="fas fa-address-card text-info"></i>Tra cứu thẻ (Khách hàng)</button>
+                        <button class="ribbon-btn"><i class="fas fa-history text-warning"></i>Tra lịch sử thẻ</button>
+                        <button class="ribbon-btn"><i class="fas fa-user-check text-success"></i>Tra cứu tài khoản</button>
+                        <button class="ribbon-btn"><i class="fas fa-id-badge text-secondary"></i>Thẻ CBCNV</button>
+                        <button class="ribbon-btn"><i class="fas fa-key text-danger"></i>Kết thúc ca</button>
+                    </div>
+                    <div class="ribbon-group-label">Tìm kiếm, thu ngân</div>
+                </div>
+
+                <div class="ribbon-divider"></div>
+
+                <div class="ribbon-group">
+                    <div class="ribbon-buttons">
+                        <button class="ribbon-btn"><i class="fas fa-chart-bar text-primary"></i>Báo cáo</button>
+                        <button class="ribbon-btn"><i class="fas fa-receipt text-info"></i>Báo cáo đổi vé mới</button>
+                        <button class="ribbon-btn"><i class="fas fa-question-circle text-warning"></i>Hướng dẫn sử dụng</button>
+                        <button class="ribbon-btn"><i class="fas fa-sign-out-alt text-danger"></i>Thoát</button>
+                    </div>
+                    <div class="ribbon-group-label">Báo cáo</div>
+                </div>
+            </div>
+
+            <div class="ribbon-site">
+                <label class="fw-bold text-primary mb-0" style="font-size: 13px;">Site</label>
+                <select class="form-select form-select-sm border-primary fw-bold" style="width: 220px; font-size: 12px;">
+                    <option selected>Núi Thần Tài</option>
+                    <option>Vinpearl land Phú Quốc</option>
+                    <option>Cổng chính C1</option>
+                </select>
+            </div>
+        </div>
     </header>
 
-    <div class="container-fluid" style="padding-bottom: 50px;">
-        <main role="main" class="pb-3">
+    <!-- Khối trung gian: co giãn hết phần còn lại, không bị cắt vì đã có min-height:0 -->
+    <div class="content-wrapper">
+        <main role="main" class="flex-grow-1 d-flex flex-column m-0 p-0" style="min-height: 0;">
             @RenderBody()
         </main>
     </div>
 
-    <!-- Footer trạng thái giống hệt chân trang ảnh -->
     <footer class="smartcard-footer d-flex justify-content-between">
         <span>IP Máy: 14.248.82.16 / oneSWebBooking_NewModel_dev</span>
         <span>Ngày hệ thống: @DateTime.Now.ToString("dd/MM/yyyy")</span>
