@@ -1,50 +1,137 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - OneSWebBooking</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - oneS SmartCard System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/OneSWebBooking.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+                font-size: 14px;
+            }
+            /* Style thanh Menu Ribbon xám chuẩn app desktop */
+            .smartcard-menu {
+                background-color: #f5f5f5;
+                border-bottom: 1px solid #ccc;
+                padding: 0;
+            }
+            .navbar-nav .nav-link {
+                color: #000 !important;
+                padding: 8px 15px !important;
+                font-weight: 500;
+                border-right: 1px solid #e0e0e0;
+            }
+            .navbar-nav .nav-link:hover {
+                background-color: #e0e0e0;
+            }
+            /* Dropdown của menu Hệ thống */
+            .dropdown-menu {
+                border-radius: 0;
+                border: 1px solid #999;
+                box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+                font-size: 13px;
+                padding: 0;
+            }
+            .dropdown-item {
+                padding: 8px 20px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .dropdown-item:hover {
+                background-color: #3399ff;
+                color: white !important;
+            }
+            /* Footer thông tin hệ thống phía dưới cùng */
+            .smartcard-footer {
+                background-color: #f5f5f5;
+                border-top: 1px solid #ccc;
+                font-size: 12px;
+                padding: 5px 15px;
+                color: #333;
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <!-- Tên phần mềm chuẩn trên tiêu đề ảnh -->
+        <div class="bg-white px-3 py-1 d-flex justify-content-between border-bottom text-muted" style="font-size: 12px;">
+            <span>Hệ thống quản lý thẻ oneS - oneS SmartCard System  © Copy right by CS-Solution 2020 V2.0</span>
+        </div>
+
+        <!-- Thanh điều hướng Menu -->
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm smartcard-menu box-shadow">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">OneSWebBooking</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+                        <!-- Nút Home quay về trang chủ -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" href="/">
+                                <i class="fas fa-home text-primary"></i> Home
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+                        <!-- Dropdown Hệ thống (Có 3 chức năng của mình) -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="systemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Hệ thống
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="systemDropdown">
+                                <li><a class="dropdown-item text-muted disabled" href="#">Hướng dẫn sử dụng</a></li>
+                                <li><a class="dropdown-item text-muted disabled" href="#">Cập nhật phần mềm</a></li>
+                                <li><a class="dropdown-item text-muted disabled" href="#">Phím tắt chương trình</a></li>
+                                <li><hr class="dropdown-divider" style="margin: 0;"></li>
+                                <li><a class="dropdown-item text-muted disabled" href="#">Thông số hệ thống</a></li>
+
+                                <!-- 3 Chức năng chính kết nối trực tiếp vào Controller của m -->
+                                <li><a class="dropdown-item fw-bold text-primary" asp-controller="Areas" asp-action="Index"><i class="fas fa-map-marker-alt mr-2"></i> Danh sách khu vực</a></li>
+                                <li><a class="dropdown-item fw-bold text-primary" asp-controller="ComputerCategories" asp-action="Index"><i class="fas fa-tags mr-2"></i> Phân loại máy tính</a></li>
+                                <li><a class="dropdown-item fw-bold text-primary" asp-controller="Computers" asp-action="Index"><i class="fas fa-desktop mr-2"></i> Danh sách máy tính</a></li>
+
+                                <li><hr class="dropdown-divider" style="margin: 0;"></li>
+                                <li><a class="dropdown-item text-muted disabled" href="#">Tùy chọn</a></li>
+                                <li><a class="dropdown-item text-danger disabled" href="#">Kết nối lại đầu đọc thẻ</a></li>
+                                <li><a class="dropdown-item text-muted disabled" href="#">Đổi site</a></li>
+                                <li><a class="dropdown-item text-muted disabled" href="#">Đổi mật khẩu</a></li>
+                                <li><a class="dropdown-item text-danger disabled" href="#">Thoát chương trình</a></li>
+                            </ul>
                         </li>
+
+                        <!-- Các menu không liên quan khác để trống (Disabled) theo đúng yêu cầu -->
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Khách đoàn</a></li>
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Bán hàng</a></li>
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Thu ngân</a></li>
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Kho thẻ</a></li>
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Nhân viên</a></li>
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Quản trị người dùng</a></li>
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Khai báo</a></li>
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Tiện ích</a></li>
+                        <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Tủ gửi đồ</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
+
+    <div class="container-fluid" style="padding-bottom: 50px;">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - OneSWebBooking - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
+    <!-- Footer trạng thái giống hệt chân trang ảnh -->
+    <footer class="smartcard-footer d-flex justify-content-between">
+        <span>IP Máy: 14.248.82.16 / oneSMC_NewModel_0805</span>
+        <span>Ngày hệ thống: @DateTime.Now.ToString("dd/MM/yyyy")</span>
+        <span>Đăng nhập bởi: admin (Phiên làm việc: 31589)</span>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
