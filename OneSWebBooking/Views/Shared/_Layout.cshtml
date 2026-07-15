@@ -26,6 +26,14 @@
                 height: 100vh;
             }
 
+            .content-wrapper {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+                overflow-y: auto; /* Thay đổi từ hidden sang auto */
+            }
+
             .copyright-header {
                 background-color: #fff;
                 font-size: 12px;
@@ -228,52 +236,55 @@
         </nav>
 
         <!-- RIBBON TOOLBAR: các nhóm nút icon + Site (giống ảnh mẫu) -->
-        <div class="ribbon-toolbar">
-            <div class="ribbon-groups">
-                <div class="ribbon-group">
-                    <div class="ribbon-buttons">
-                        <button class="ribbon-btn"><i class="fas fa-id-card text-primary"></i>Gia hạn thẻ</button>
-                        <button class="ribbon-btn"><i class="fas fa-undo text-primary"></i>Hoàn dịch vụ đã bán</button>
+        @if (ViewData["Title"]?.ToString() == "Trang chủ")
+        {
+            <div class="ribbon-toolbar">
+                <div class="ribbon-groups">
+                    <div class="ribbon-group">
+                        <div class="ribbon-buttons">
+                            <button class="ribbon-btn"><i class="fas fa-id-card text-primary"></i>Gia hạn thẻ</button>
+                            <button class="ribbon-btn"><i class="fas fa-undo text-primary"></i>Hoàn dịch vụ đã bán</button>
+                        </div>
+                        <div class="ribbon-group-label">Xử lý thẻ, dịch vụ</div>
                     </div>
-                    <div class="ribbon-group-label">Xử lý thẻ, dịch vụ</div>
+
+                    <div class="ribbon-divider"></div>
+
+                    <div class="ribbon-group">
+                        <div class="ribbon-buttons">
+                            <button class="ribbon-btn"><i class="fas fa-file-invoice-dollar text-primary"></i>Tìm kiếm hóa đơn</button>
+                            <button class="ribbon-btn"><i class="fas fa-address-card text-info"></i>Tra cứu thẻ (Khách hàng)</button>
+                            <button class="ribbon-btn"><i class="fas fa-history text-warning"></i>Tra lịch sử thẻ</button>
+                            <button class="ribbon-btn"><i class="fas fa-user-check text-success"></i>Tra cứu tài khoản</button>
+                            <button class="ribbon-btn"><i class="fas fa-id-badge text-secondary"></i>Thẻ CBCNV</button>
+                            <button class="ribbon-btn"><i class="fas fa-key text-danger"></i>Kết thúc ca</button>
+                        </div>
+                        <div class="ribbon-group-label">Tìm kiếm, thu ngân</div>
+                    </div>
+
+                    <div class="ribbon-divider"></div>
+
+                    <div class="ribbon-group">
+                        <div class="ribbon-buttons">
+                            <button class="ribbon-btn"><i class="fas fa-chart-bar text-primary"></i>Báo cáo</button>
+                            <button class="ribbon-btn"><i class="fas fa-receipt text-info"></i>Báo cáo đổi vé mới</button>
+                            <button class="ribbon-btn"><i class="fas fa-question-circle text-warning"></i>Hướng dẫn sử dụng</button>
+                            <button class="ribbon-btn"><i class="fas fa-sign-out-alt text-danger"></i>Thoát</button>
+                        </div>
+                        <div class="ribbon-group-label">Báo cáo</div>
+                    </div>
                 </div>
 
-                <div class="ribbon-divider"></div>
-
-                <div class="ribbon-group">
-                    <div class="ribbon-buttons">
-                        <button class="ribbon-btn"><i class="fas fa-file-invoice-dollar text-primary"></i>Tìm kiếm hóa đơn</button>
-                        <button class="ribbon-btn"><i class="fas fa-address-card text-info"></i>Tra cứu thẻ (Khách hàng)</button>
-                        <button class="ribbon-btn"><i class="fas fa-history text-warning"></i>Tra lịch sử thẻ</button>
-                        <button class="ribbon-btn"><i class="fas fa-user-check text-success"></i>Tra cứu tài khoản</button>
-                        <button class="ribbon-btn"><i class="fas fa-id-badge text-secondary"></i>Thẻ CBCNV</button>
-                        <button class="ribbon-btn"><i class="fas fa-key text-danger"></i>Kết thúc ca</button>
-                    </div>
-                    <div class="ribbon-group-label">Tìm kiếm, thu ngân</div>
-                </div>
-
-                <div class="ribbon-divider"></div>
-
-                <div class="ribbon-group">
-                    <div class="ribbon-buttons">
-                        <button class="ribbon-btn"><i class="fas fa-chart-bar text-primary"></i>Báo cáo</button>
-                        <button class="ribbon-btn"><i class="fas fa-receipt text-info"></i>Báo cáo đổi vé mới</button>
-                        <button class="ribbon-btn"><i class="fas fa-question-circle text-warning"></i>Hướng dẫn sử dụng</button>
-                        <button class="ribbon-btn"><i class="fas fa-sign-out-alt text-danger"></i>Thoát</button>
-                    </div>
-                    <div class="ribbon-group-label">Báo cáo</div>
+                <div class="ribbon-site">
+                    <label class="fw-bold text-primary mb-0" style="font-size: 13px;">Site</label>
+                    <select class="form-select form-select-sm border-primary fw-bold" style="width: 220px; font-size: 12px;">
+                        <option selected>Núi Thần Tài</option>
+                        <option>Vinpearl land Phú Quốc</option>
+                        <option>Cổng chính C1</option>
+                    </select>
                 </div>
             </div>
-
-            <div class="ribbon-site">
-                <label class="fw-bold text-primary mb-0" style="font-size: 13px;">Site</label>
-                <select class="form-select form-select-sm border-primary fw-bold" style="width: 220px; font-size: 12px;">
-                    <option selected>Núi Thần Tài</option>
-                    <option>Vinpearl land Phú Quốc</option>
-                    <option>Cổng chính C1</option>
-                </select>
-            </div>
-        </div>
+        }
     </header>
 
     <!-- Khối trung gian: co giãn hết phần còn lại, không bị cắt vì đã có min-height:0 -->
