@@ -37,19 +37,31 @@
         min-width: 60px;
     }
 
+    
+
         .winform-btn:hover:not(:disabled) {
             background-color: #cce4f7;
             border-color: #a8d2f0;
         }
 
         .winform-btn:disabled {
-            color: #888 !important;
+            color: #888 !important; 
             cursor: not-allowed;
         }
 
         .winform-btn i {
             font-size: 18px;
             margin-bottom: 3px;
+        }
+
+        .winform-btn-exit {
+        color: #b71c1c !important; /* Màu đỏ sậm mặc định */
+        }
+
+        .winform-btn-exit:hover {
+            background-color: #e81123 !important; /* Màu đỏ tươi chuẩn nút Close Windows */
+            border-color: #e81123 !important;
+            color: #fff !important; /* Chữ và icon chuyển sang màu trắng */
         }
 
     .winform-groupbox {
@@ -179,7 +191,7 @@
                     </button>
                 </div>
                 <div>
-                    <a href="/" class="winform-btn text-dark text-decoration-none">
+                    <a href="/" class="winform-btn winform-btn-exit text-decoration-none">
                         <i class="fas fa-power-off"></i>Thoát
                     </a>
                 </div>
