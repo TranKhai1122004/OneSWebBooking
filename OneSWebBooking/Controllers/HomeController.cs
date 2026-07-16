@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneSWebBooking.Models;
 using System.Diagnostics;
 
 namespace OneSWebBooking.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         public IActionResult Index()

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // 1. THÊM THƯ VIỆN NÀY ĐỂ SỬ DỤNG [Authorize]
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OneSWebBooking.Models;
@@ -5,6 +6,7 @@ using OneSWebBooking.Data;
 
 namespace OneSWebBooking.Controllers
 {
+    [Authorize] // 2. CHẶN TRUY CẬP: Bắt buộc đăng nhập mới được thao tác với danh sách máy tính
     public class ComputersController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -47,10 +49,13 @@ namespace OneSWebBooking.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,ComputerName,CounterName,IpAddress,MacAddress,ServiceName,ComputerCategoryId,AreaId,PortType,SwallowedCardCount,Status")] Computer computer)
         {
+            // 3. ĐỒNG BỘ: Lấy Username từ HttpContext của tài khoản đăng nhập thực tế
+            string currentUsername = HttpContext.User.Identity?.Name ?? "system";
+
             // Điền mặc định thông tin Audit hệ thống
-            computer.CreatedBy = "admin";
+            computer.CreatedBy = currentUsername;
             computer.CreatedDate = DateTime.Now;
-            computer.ModifiedBy = "admin";
+            computer.ModifiedBy = currentUsername;
             computer.ModifiedDate = DateTime.Now;
 
             // FIX BUG 2: Chạy validate model mặc định trước
@@ -120,10 +125,12 @@ namespace OneSWebBooking.Controllers
             var existingComputer = await _context.Computers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
             if (existingComputer == null) return NotFound();
 
-            // Giữ lại audit cũ
+            // 4. ĐỒNG BỘ: Sửa đổi ở đây từ "admin_edit" thành "HttpContext.User.Identity" và giữ lại audit cũ
+            string currentUsername = HttpContext.User.Identity?.Name ?? "system";
+
             computer.CreatedBy = existingComputer.CreatedBy;
             computer.CreatedDate = existingComputer.CreatedDate;
-            computer.ModifiedBy = "admin_edit";
+            computer.ModifiedBy = currentUsername;
             computer.ModifiedDate = DateTime.Now;
 
             // FIX BUG 2: Chạy validate model mặc định trước
@@ -193,6 +200,8 @@ namespace OneSWebBooking.Controllers
         // POST: Computers/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        // 5. PHÂN QUYỀN NÂNG CAO (Tùy chọn): Chỉ có Admin mới được xóa máy tính
+        // [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             if (id == null) return NotFound();

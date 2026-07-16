@@ -269,7 +269,9 @@
                             <button class="ribbon-btn"><i class="fas fa-chart-bar text-primary"></i>Báo cáo</button>
                             <button class="ribbon-btn"><i class="fas fa-receipt text-info"></i>Báo cáo đổi vé mới</button>
                             <button class="ribbon-btn"><i class="fas fa-question-circle text-warning"></i>Hướng dẫn sử dụng</button>
-                            <button class="ribbon-btn"><i class="fas fa-sign-out-alt text-danger"></i>Thoát</button>
+                            <a asp-controller="Account" asp-action="Logout" class="ribbon-btn text-decoration-none">
+                                <i class="fas fa-sign-out-alt text-danger"></i>Thoát
+                            </a>
                         </div>
                         <div class="ribbon-group-label">Báo cáo</div>
                     </div>
@@ -297,7 +299,17 @@
     <footer class="smartcard-footer d-flex justify-content-between">
         <span>IP Máy: 14.248.82.16 / oneSWebBooking_NewModel_dev</span>
         <span>Ngày hệ thống: @DateTime.Now.ToString("dd/MM/yyyy")</span>
-        <span>Đăng nhập bởi: admin (Phiên làm việc: 31589)</span>
+
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "User";
+            <span>Đăng nhập bởi: <strong>@fullName (@role)</strong></span>
+        }
+        else
+        {
+            <span>Đăng nhập bởi: &lt;Không tạo phiên&gt;</span>
+        }
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

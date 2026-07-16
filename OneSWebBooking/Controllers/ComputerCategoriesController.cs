@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization; // 1. THÊM THƯ VIỆN NÀY ĐỂ SỬ DỤNG [Authorize]
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OneSWebBooking.Models;
 using OneSWebBooking.Data;
+using OneSWebBooking.Models;
+using System.Collections;
 
 namespace OneSWebBooking.Controllers
 {
+    [Authorize] // 2. CHẶN TRUY CẬP: Bắt buộc đăng nhập mới được thao tác với nhóm máy tính
     public class ComputerCategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -25,10 +28,12 @@ namespace OneSWebBooking.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CategoryName,Description,Status")] ComputerCategory computercategory)
         {
-            // Tự gán các trường Audit hệ thống trước khi Validate
-            computercategory.CreatedBy = "admin";
+            // 3. ĐỒNG BỘ: Lấy Username từ HttpContext của tài khoản đang đăng nhập thực tế
+            string currentUsername = HttpContext.User.Identity?.Name ?? "system";
+
+            computercategory.CreatedBy = currentUsername;
             computercategory.CreatedDate = DateTime.Now;
-            computercategory.ModifiedBy = "admin";
+            computercategory.ModifiedBy = currentUsername;
             computercategory.ModifiedDate = DateTime.Now;
 
             // Xóa cache và validate lại thực thể sạch
@@ -67,9 +72,12 @@ namespace OneSWebBooking.Controllers
             var existingCategory = await _context.ComputerCategories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
             if (existingCategory == null) return NotFound();
 
+            // 4. ĐỒNG BỘ: Sửa đổi ở đây từ "User.Identity" thành "HttpContext.User.Identity" cho đồng bộ và tường minh
+            string currentUsername = HttpContext.User.Identity?.Name ?? "system";
+
             computercategory.CreatedBy = existingCategory.CreatedBy;
             computercategory.CreatedDate = existingCategory.CreatedDate;
-            computercategory.ModifiedBy = "admin_edit";
+            computercategory.ModifiedBy = currentUsername;
             computercategory.ModifiedDate = DateTime.Now;
 
             ModelState.Clear();
@@ -106,6 +114,8 @@ namespace OneSWebBooking.Controllers
         // POST: ComputerCategories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        // 5. PHÂN QUYỀN NÂNG CAO (Tùy chọn): Chỉ có Admin mới được xóa danh mục
+        // [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             if (id == null) return NotFound();
@@ -116,7 +126,7 @@ namespace OneSWebBooking.Controllers
             {
                 return BadRequest("Không thể xóa nhóm máy tính này vì đang có máy tính hoạt động thuộc nhóm!");
             }
-
+            
             var computercategory = await _context.ComputerCategories.FindAsync(id);
             if (computercategory != null)
             {

@@ -1,0 +1,229 @@
+﻿@{
+    Layout = null; // Trang đăng nhập sử dụng giao diện riêng biệt
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập hệ thống quản lý thẻ oneS</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                background-color: #f0f4f9;
+                font-family: Arial, sans-serif;
+                font-size: 13px;
+            }
+
+            .login-container {
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+
+            .header-copyright {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                background-color: #fff;
+                padding: 5px 15px;
+                font-size: 11px;
+                color: #555;
+                border-bottom: 1px solid #d3d3d3;
+            }
+
+            .login-card {
+                width: 780px;
+                background-color: #fff;
+                border: 1px solid #c0c0c0;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .login-card-header {
+                background: linear-gradient(to bottom, #f0f0f0, #dcdcdc);
+                border-bottom: 1px solid #b0b0b0;
+                text-align: center;
+                padding: 8px;
+                font-weight: bold;
+                color: #333;
+                font-size: 14px;
+            }
+
+            .login-card-body {
+                display: flex;
+                padding: 30px;
+                align-items: center;
+                background-color: #f5f6f8;
+            }
+
+            .login-form-side {
+                flex: 1;
+                padding-right: 20px;
+                border-right: 1px dashed #ccc;
+            }
+
+            .login-logo-side {
+                width: 250px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding-left: 20px;
+            }
+
+            .form-group-custom {
+                display: flex;
+                align-items: center;
+                margin-bottom: 12px;
+            }
+
+                .form-group-custom label {
+                    width: 110px;
+                    text-align: right;
+                    padding-right: 15px;
+                    font-weight: bold;
+                    color: #000080;
+                }
+
+                .form-group-custom .form-control-custom {
+                    flex: 1;
+                    padding: 4px 8px;
+                    border: 1px solid #a0a0a0;
+                    font-size: 13px;
+                    outline: none;
+                }
+
+                    .form-group-custom .form-control-custom:focus {
+                        border-color: #000080;
+                        box-shadow: 0 0 4px rgba(0,0,128,0.2);
+                    }
+
+            .checkbox-custom {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-top: 15px;
+                margin-bottom: 15px;
+                font-weight: bold;
+                color: #333;
+            }
+
+                .checkbox-custom input {
+                    margin-right: 8px;
+                }
+
+            .btn-group-custom {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .btn-custom {
+                padding: 5px 20px;
+                border: 1px solid #8f8f8f;
+                background: linear-gradient(to bottom, #ffffff, #e0e0e0);
+                font-size: 13px;
+                cursor: pointer;
+                min-width: 90px;
+            }
+
+                .btn-custom:hover {
+                    background: linear-gradient(to bottom, #e0e0e0, #cccccc);
+                    border-color: #707070;
+                }
+
+            .footer-version {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: #f0f0f0;
+                border-top: 1px solid #d3d3d3;
+                padding: 5px 15px;
+                font-size: 11px;
+                display: flex;
+                justify-content: space-between;
+                color: #555;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="header-copyright">
+        <i class="fa-solid fa-credit-card text-danger"></i> <strong>Hệ thống quản lý thẻ oneS</strong> - oneS SmartCard System | © Copy right by CS-Solution 2020 V2.0
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-card-header">
+                Đăng nhập hệ thống quản lý thẻ oneS
+            </div>
+            <div class="login-card-body">
+                <!-- Form Đăng nhập -->
+                <div class="login-form-side">
+                    <form asp-controller="Account" asp-action="Login" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="text-danger mb-2 text-center" asp-validation-summary="ModelOnly"></div>
+
+                        <div class="form-group-custom">
+                            <label for="username">Tên đăng nhập</label>
+                            <input type="text" id="username" name="username" class="form-control-custom" required autofocus />
+                        </div>
+
+                        <div class="form-group-custom">
+                            <label for="password">Mật khẩu</label>
+                            <input type="password" id="password" name="password" class="form-control-custom" required />
+                        </div>
+
+                        <div class="form-group-custom">
+                            <label for="site">Site</label>
+                            <select id="site" name="site" class="form-control-custom" style="padding: 3px 8px;">
+                                <option value="Núi Thần Tài">Núi Thần Tài</option>
+                                <option value="Vinpearl land Phú Quốc">Vinpearl land Phú Quốc</option>
+                                <option value="Cổng chính C1">Cổng chính C1</option>
+                            </select>
+                        </div>
+
+                        <div class="checkbox-custom">
+                            <!-- Thiết lập mặc định tích sẵn "Đăng nhập không tạo phiên" như mẫu của bạn -->
+                            <input type="checkbox" id="noPersistent" name="noPersistent" value="true" checked />
+                            <label class="mb-0" for="noPersistent">Đăng nhập không tạo phiên</label>
+                        </div>
+
+                        <div class="btn-group-custom">
+                            <button type="submit" class="btn-custom">Đăng nhập</button>
+                            <button type="button" class="btn-custom" onclick="window.close()">Thoát</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Bên phải: Logo -->
+                <div class="login-logo-side">
+                    <h1 class="display-4 fw-bold text-danger m-0" style="font-family: 'Arial Black', sans-serif; font-size: 55px;">one<span class="text-primary">S</span></h1>
+                    <div class="badge bg-primary text-wrap fw-bold px-3 py-1 mt-1" style="font-size: 9px; letter-spacing: 1px; width: 100%;">
+                        oneS SMARTCARD SYSTEM
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-version">
+        <span>IP Máy: 14.248.82.16 / oneSMC_NewModel_0805</span>
+        <span>Ngày hệ thống: @DateTime.Now.ToString("dd/MM/yyyy")</span>
+        <span>Đăng nhập bởi: &lt;Không tạo phiên&gt;</span>
+    </div>
+
+</body>
+</html>

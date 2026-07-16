@@ -10,6 +10,12 @@ namespace OneSWebBooking.Data
         public DbSet<Area> Areas { get; set; }
         public DbSet<ComputerCategory> ComputerCategories { get; set; }
         public DbSet<Computer> Computers { get; set; }
-        //public DbSet<User> Users { get; set; }
+        public DbSet<User> Users { get; set; } 
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<User>().ToTable("User");
+        }
     }
 }
