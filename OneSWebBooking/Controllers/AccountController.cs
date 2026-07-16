@@ -20,23 +20,7 @@ namespace OneSWebBooking.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            if (!_context.Users.Any(u => u.Username == "Ones")) // Kiểm tra xem user "Ones" đã tồn tại chưa
-            {
-                var (hash, salt) = PasswordHelper.HashPassword("123456");
-                var adminUser = new OneSWebBooking.Models.User
-                {
-                    Username = "Ones", // Viết hoa chữ O đúng như bạn muốn
-                    Email = "ones@gmail.com",
-                    PasswordHash = hash,
-                    PasswordSalt = salt,
-                    Role = "Admin",
-                    FullName = "Administrator",
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.Users.Add(adminUser);
-                _context.SaveChanges();
-            }
+         
             // ĐỒNG BỘ: Dùng HttpContext.User để tránh xung đột tên gọi với Model User của bạn
             if (HttpContext.User.Identity != null && HttpContext.User.Identity.IsAuthenticated)
             {
@@ -74,12 +58,16 @@ namespace OneSWebBooking.Controllers
                 new Claim("SelectedSite", site)
             };
 
+            if (noPersistent)
+            {
+                claims.Add(new Claim("IsNoPersistent", "true"));
+            }
+
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
             var authProperties = new AuthenticationProperties
             {
-                // noPersistent == true -> Đăng nhập không tạo phiên (IsPersistent = false)[cite: 1]
-                IsPersistent = !noPersistent,
+                IsPersistent = !noPersistent, // noPersistent == true -> Đăng nhập không tạo phiên (IsPersistent = false)
                 IssuedUtc = DateTimeOffset.UtcNow
             };
 

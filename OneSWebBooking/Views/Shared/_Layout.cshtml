@@ -300,7 +300,13 @@
         <span>IP Máy: 14.248.82.16 / oneSWebBooking_NewModel_dev</span>
         <span>Ngày hệ thống: @DateTime.Now.ToString("dd/MM/yyyy")</span>
 
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        @* ĐOẠN KIỂM TRA ĐĂNG NHẬP Ở ĐÂY *@
+        @{
+            // Kiểm tra xem User có Claim "IsNoPersistent" được đánh dấu từ Controller không
+            var isNoPersistent = User.HasClaim(c => c.Type == "IsNoPersistent" && c.Value == "true");
+        }
+
+        @if (User.Identity != null && User.Identity.IsAuthenticated && !isNoPersistent)
         {
             var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
             var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "User";

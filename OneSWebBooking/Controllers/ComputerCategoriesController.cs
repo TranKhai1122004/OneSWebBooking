@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization; // 1. THÊM THƯ VIỆN NÀY ĐỂ SỬ DỤNG [Authorize]
+using Microsoft.AspNetCore.Authorization; 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OneSWebBooking.Data;
@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace OneSWebBooking.Controllers
 {
-    [Authorize] // 2. CHẶN TRUY CẬP: Bắt buộc đăng nhập mới được thao tác với nhóm máy tính
+    [Authorize] 
     public class ComputerCategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;

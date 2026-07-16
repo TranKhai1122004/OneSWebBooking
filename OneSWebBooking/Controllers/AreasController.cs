@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization; // 1. THÊM THƯ VIỆN NÀY ĐỂ DÙNG [Authorize]
+using Microsoft.AspNetCore.Authorization; 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OneSWebBooking.Data;
@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace OneSWebBooking.Controllers
 {
-    [Authorize] // 2. CHẶN TRUY CẬP: Yêu cầu đăng nhập mới có thể thực hiện bất kỳ hành động nào trong Controller này
+    [Authorize] 
     public class AreasController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -17,14 +17,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login"; 
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromDays(7); 
+        options.ExpireTimeSpan = TimeSpan.FromHours(10);
+        //options.SlidingExpiration = false;
     });
 
 builder.Services.AddDistributedMemoryCache();
 // 2. Cấu hình Session
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
 
     // Thêm hậu tố ".Cookie" trước HttpOnly và IsEssential
     options.Cookie.HttpOnly = true;

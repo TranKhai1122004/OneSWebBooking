@@ -1,7 +1,6 @@
 ﻿@{
     Layout = null; // Trang đăng nhập sử dụng giao diện riêng biệt
 }
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -11,33 +10,157 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
+            /* Ép toàn trang chiếm trọn 100% chiều cao màn hình */
             html, body {
                 margin: 0;
                 padding: 0;
                 height: 100%;
+                overflow: hidden;
                 background-color: #f0f4f9;
                 font-family: Arial, sans-serif;
                 font-size: 13px;
             }
 
-            .login-container {
-                height: 100vh;
+            /* Body dùng flex dọc để các thành phần phân bổ chuẩn xác */
+            body {
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                position: relative;
+                flex-direction: column;
+                height: 100vh;
             }
 
-            .header-copyright {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
+            .copyright-header {
                 background-color: #fff;
                 padding: 5px 15px;
                 font-size: 11px;
                 color: #555;
                 border-bottom: 1px solid #d3d3d3;
+                flex-shrink: 0;
+            }
+
+            /* Thanh Menu (Hệ thống, Khách đoàn...) */
+            .smartcard-menu {
+                background-color: #f5f5f5;
+                border-bottom: 1px solid #ccc;
+                padding: 0;
+                flex-shrink: 0;
+            }
+
+            .navbar-nav .nav-link {
+                color: #000 !important;
+                padding: 8px 15px !important;
+                font-weight: 500;
+                border-right: 1px solid #e0e0e0;
+            }
+
+                .navbar-nav .nav-link:hover {
+                    background-color: #e0e0e0;
+                }
+
+            .dropdown-menu {
+                border-radius: 0;
+                border: 1px solid #999;
+                box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+                font-size: 13px;
+                padding: 0;
+            }
+
+            .dropdown-item {
+                padding: 8px 20px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+                .dropdown-item:hover {
+                    background-color: #3399ff;
+                    color: white !important;
+                }
+
+            /* ==== RIBBON TOOLBAR ==== */
+            .ribbon-toolbar {
+                background: linear-gradient(to bottom, #fbfbfb, #e6e6e6);
+                border-bottom: 1px solid #bbb;
+                box-shadow: 0 3px 5px rgba(0, 0, 0, 0.12);
+                padding: 8px 15px 4px 15px;
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                flex-shrink: 0;
+            }
+
+            .ribbon-groups {
+                display: flex;
+                align-items: flex-start;
+            }
+
+            .ribbon-group {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .ribbon-buttons {
+                display: flex;
+                gap: 2px;
+                height: 62px;
+            }
+
+            .ribbon-btn {
+                background: transparent;
+                border: 1px solid transparent;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 74px;
+                height: 100%;
+                padding: 4px 2px;
+                font-size: 10.5px;
+                line-height: 1.15;
+                color: #ccc; /* Làm mờ các nút chưa dùng được lúc chưa login */
+                border-radius: 4px;
+                text-decoration: none;
+                cursor: not-allowed;
+            }
+
+                .ribbon-btn i {
+                    font-size: 20px;
+                    margin-bottom: 3px;
+                    flex-shrink: 0;
+                    opacity: 0.5;
+                }
+
+            .ribbon-divider {
+                width: 1px;
+                align-self: stretch;
+                background-color: #ccc;
+                margin: 2px 12px 14px 12px;
+            }
+
+            .ribbon-group-label {
+                font-size: 10.5px;
+                color: #777;
+                margin-top: 2px;
+                padding-top: 3px;
+                border-top: 1px solid #ccc;
+                width: 100%;
+                text-align: center;
+            }
+
+            .ribbon-site {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding-top: 8px;
+                white-space: nowrap;
+            }
+
+            /* Khung nội dung chính chứa Card Đăng nhập */
+            .login-content-area {
+                flex-grow: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 0;
+                overflow-y: auto;
             }
 
             .login-card {
@@ -122,10 +245,12 @@
                     margin-right: 8px;
                 }
 
+            /* ==== QUAY LẠI PHƯƠNG ÁN: 2 NÚT GẦN NHAU + THẲNG MÉP TRÁI Ô INPUT ==== */
             .btn-group-custom {
                 display: flex;
-                justify-content: center;
-                gap: 15px;
+                justify-content: flex-start; /* 2 nút đứng gần nhau từ phía trái */
+                gap: 15px; /* Khoảng cách giữa 2 nút */
+                margin-left: 110px; /* Dịch cả cụm nút sang phải đúng bằng 110px (bằng độ rộng Label) để thẳng hàng với mép trái ô nhập */
             }
 
             .btn-custom {
@@ -133,37 +258,148 @@
                 border: 1px solid #8f8f8f;
                 background: linear-gradient(to bottom, #ffffff, #e0e0e0);
                 font-size: 13px;
+                font-weight: bold;
                 cursor: pointer;
-                min-width: 90px;
+                min-width: 95px;
+                color: #333;
             }
 
-                .btn-custom:hover {
-                    background: linear-gradient(to bottom, #e0e0e0, #cccccc);
-                    border-color: #707070;
+            /* Nút đăng nhập nổi bật bằng màu chữ navy */
+            .btn-submit-custom {
+                color: #000080;
+            }
+
+            .btn-custom:hover {
+                background: linear-gradient(to bottom, #e0e0e0, #cccccc);
+                border-color: #707070;
+            }
+
+            .test-account-box {
+                margin-top: 18px;
+                padding: 8px 12px;
+                background-color: #ffffe1;
+                border: 1px solid #e1d575;
+                border-radius: 2px;
+                font-size: 12px;
+                color: #444;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+                .test-account-box i {
+                    color: #bfa100;
+                    font-size: 14px;
                 }
 
-            .footer-version {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background-color: #f0f0f0;
-                border-top: 1px solid #d3d3d3;
-                padding: 5px 15px;
+                .test-account-box strong {
+                    color: #000080;
+                }
+
+            /* Footer bám đáy */
+            .smartcard-footer {
+                background-color: #f5f5f5;
+                border-top: 1px solid #ccc;
                 font-size: 11px;
-                display: flex;
-                justify-content: space-between;
-                color: #555;
+                padding: 6px 15px;
+                color: #333;
+                box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.08);
+                width: 100%;
+                flex-shrink: 0;
             }
     </style>
 </head>
 <body>
 
-    <div class="header-copyright">
+    <!-- 1. Header Copyright Bản Quyền -->
+    <div class="copyright-header">
         <i class="fa-solid fa-credit-card text-danger"></i> <strong>Hệ thống quản lý thẻ oneS</strong> - oneS SmartCard System | © Copy right by CS-Solution 2020 V2.0
     </div>
 
-    <div class="login-container">
+    <!-- 2. Menu Điều Hướng -->
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm smartcard-menu">
+        <div class="container-fluid">
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="#">
+                            <i class="fas fa-home text-primary"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-dark" href="#" id="systemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Hệ thống
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="systemDropdown">
+                            <li><a class="dropdown-item text-muted disabled" href="#">Hướng dẫn sử dụng</a></li>
+                            <li><a class="dropdown-item text-muted disabled" href="#">Cập nhật phần mềm</a></li>
+                            <li><a class="dropdown-item text-muted disabled" href="#">Phím tắt chương trình</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Khách đoàn</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Bán hàng</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Thu ngân</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Kho thẻ</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Nhân viên</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Quản trị người dùng</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Khai báo</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Tiện ích</a></li>
+                    <li class="nav-item"><a class="nav-link text-muted disabled" href="#">Tủ gửi đồ</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 3. Ribbon Toolbar -->
+    <div class="ribbon-toolbar">
+        <div class="ribbon-groups">
+            <div class="ribbon-group">
+                <div class="ribbon-buttons">
+                    <button class="ribbon-btn" disabled><i class="fas fa-id-card"></i>Gia hạn thẻ</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-undo"></i>Hoàn dịch vụ</button>
+                </div>
+                <div class="ribbon-group-label">Xử lý thẻ, dịch vụ</div>
+            </div>
+
+            <div class="ribbon-divider"></div>
+
+            <div class="ribbon-group">
+                <div class="ribbon-buttons">
+                    <button class="ribbon-btn" disabled><i class="fas fa-file-invoice-dollar"></i>Tìm kiếm HĐ</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-address-card"></i>Tra cứu thẻ</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-history"></i>Lịch sử thẻ</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-user-check"></i>Tra tài khoản</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-id-badge"></i>Thẻ CBCNV</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-key"></i>Kết thúc ca</button>
+                </div>
+                <div class="ribbon-group-label">Tìm kiếm, thu ngân</div>
+            </div>
+
+            <div class="ribbon-divider"></div>
+
+            <div class="ribbon-group">
+                <div class="ribbon-buttons">
+                    <button class="ribbon-btn" disabled><i class="fas fa-chart-bar"></i>Báo cáo</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-receipt"></i>Đổi vé mới</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-question-circle"></i>Hướng dẫn</button>
+                    <button class="ribbon-btn" disabled><i class="fas fa-sign-out-alt"></i>Thoát</button>
+                </div>
+                <div class="ribbon-group-label">Báo cáo</div>
+            </div>
+        </div>
+
+        <div class="ribbon-site">
+            <label class="fw-bold text-primary mb-0" style="font-size: 13px;">Site</label>
+            <select class="form-select form-select-sm border-primary fw-bold" style="width: 200px; font-size: 12px;" id="siteSelect">
+                <option value="Núi Thần Tài" selected>Núi Thần Tài</option>
+                <option value="Vinpearl land Phú Quốc">Vinpearl land Phú Quốc</option>
+                <option value="Cổng chính C1">Cổng chính C1</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 4. Vùng Giữa: Form Đăng Nhập -->
+    <div class="login-content-area">
         <div class="login-card">
             <div class="login-card-header">
                 Đăng nhập hệ thống quản lý thẻ oneS
@@ -196,14 +432,20 @@
                         </div>
 
                         <div class="checkbox-custom">
-                            <!-- Thiết lập mặc định tích sẵn "Đăng nhập không tạo phiên" như mẫu của bạn -->
                             <input type="checkbox" id="noPersistent" name="noPersistent" value="true" checked />
                             <label class="mb-0" for="noPersistent">Đăng nhập không tạo phiên</label>
                         </div>
 
+                        <!-- Cụm nút Đăng nhập & Thoát đứng cạnh nhau -->
                         <div class="btn-group-custom">
-                            <button type="submit" class="btn-custom">Đăng nhập</button>
+                            <button type="submit" class="btn-custom btn-submit-custom">Đăng nhập</button>
                             <button type="button" class="btn-custom" onclick="window.close()">Thoát</button>
+                        </div>
+
+                        <!-- Ô gợi ý tài khoản test -->
+                        <div class="test-account-box">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Tài khoản Test: <strong>Admin</strong> | Mật khẩu: <strong>123456</strong></span>
                         </div>
                     </form>
                 </div>
@@ -219,11 +461,28 @@
         </div>
     </div>
 
-    <div class="footer-version">
+    <!-- 5. Footer Thông Tin -->
+    <footer class="smartcard-footer d-flex justify-content-between">
         <span>IP Máy: 14.248.82.16 / oneSMC_NewModel_0805</span>
         <span>Ngày hệ thống: @DateTime.Now.ToString("dd/MM/yyyy")</span>
         <span>Đăng nhập bởi: &lt;Không tạo phiên&gt;</span>
-    </div>
+    </footer>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Đồng bộ hóa giá trị select Site ở trong Form và select Site trên thanh Ribbon
+        const formSiteSelect = document.getElementById('site');
+        const ribbonSiteSelect = document.getElementById('siteSelect');
+
+        if(formSiteSelect && ribbonSiteSelect) {
+        ribbonSiteSelect.addEventListener('change', function() {
+        formSiteSelect.value = this.value;
+        });
+        formSiteSelect.addEventListener('change', function() {
+        ribbonSiteSelect.value = this.value;
+        });
+        }
+    </script>
 </body>
 </html>
