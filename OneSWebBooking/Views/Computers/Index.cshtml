@@ -363,8 +363,8 @@
         $(document).ready(function () {
             let currentAction = "";
 
-            // 1. CLICK CHỌN 1 DÒNG TRÊN BẢNG GRID
-            $("#gridTable tbody tr").click(function () {
+            // 1. CLICK CHỌN 1 DÒNG TRÊN BẢNG GRID (use event delegation so dynamically added rows work)
+            $("#gridTable tbody").on("click", "tr", function () {
                 if (currentAction !== "") return;
 
                 $("#gridTable tbody tr").removeClass("selected-row");
@@ -450,8 +450,85 @@
                 let formData = $("#computerForm").serialize();
 
                 $.post(url, formData)
-                    .done(function () {
-                        window.location.reload();
+                    .done(function (res) {
+                        if (!res || !res.success) {
+                            showError("Lỗi không xác định từ máy chủ.");
+                            return;
+                        }
+                        const item = res.item;
+                        if (currentAction === "create") {
+                            // Build row using returned id and current form values for display names
+                            const catText = $("#computerCategoryId option:selected").text() || "...";
+                            const areaText = $("#areaId option:selected").text() || "...";
+                            const tr = $("<tr>")
+                                .attr("data-id", item.id)
+                                .attr("data-name", item.name)
+                                .attr("data-counter", item.counter || "")
+                                .attr("data-ip", item.ip || "")
+                                .attr("data-mac", item.mac || "")
+                                .attr("data-catid", item.catId)
+                                .attr("data-areaid", item.areaId)
+                                .attr("data-service", item.service || "")
+                                .attr("data-porttype", item.portType || "")
+                                .attr("data-swallowedcardcount", item.swallowedCardCount || 0)
+                                .attr("data-status", item.status.toString())
+                                .attr("data-createdby", item.createdBy || "")
+                                .attr("data-createddate", item.createdDate || "...")
+                                .attr("data-modifiedby", item.modifiedBy || "")
+                                .attr("data-modifieddate", item.modifiedDate || "...")
+                                .toggleClass("row-inactive", !item.status)
+                                .append($('<td>').addClass('fw-bold').text(item.name))
+                                .append($('<td>').text(item.counter || ''))
+                                .append($('<td>').text(item.ip || ''))
+                                .append($('<td>').text(catText))
+                                .append($('<td>').text(areaText))
+                                .append($('<td>').text(item.portType || ''))
+                                .append($('<td>').text(item.swallowedCardCount || 0))
+                                .append($('<td>').text(item.status ? 'đang hoạt động' : 'không sử dụng'));
+
+                            $("#gridTable tbody").append(tr);
+                            $("#gridTable tbody tr").removeClass("selected-row");
+                            tr.addClass("selected-row");
+                        } else {
+                            const tr = $("#gridTable tbody tr.selected-row");
+                            if (tr.length) {
+                                tr.attr("data-name", item.name)
+                                  .attr("data-counter", item.counter || "")
+                                  .attr("data-ip", item.ip || "")
+                                  .attr("data-mac", item.mac || "")
+                                  .attr("data-catid", item.catId)
+                                  .attr("data-areaid", item.areaId)
+                                  .attr("data-service", item.service || "")
+                                  .attr("data-porttype", item.portType || "")
+                                  .attr("data-swallowedcardcount", item.swallowedCardCount || 0)
+                                  .attr("data-status", item.status.toString())
+                                  .attr("data-modifiedby", item.modifiedBy || "")
+                                  .attr("data-modifieddate", item.modifiedDate || "...");
+
+                                tr.find('td').eq(0).text(item.name);
+                                tr.find('td').eq(1).text(item.counter || '');
+                                tr.find('td').eq(2).text(item.ip || '');
+                                // category/area display names come from select values
+                                tr.find('td').eq(3).text($("#computerCategoryId option:selected").text() || '...');
+                                tr.find('td').eq(4).text($("#areaId option:selected").text() || '...');
+                                tr.find('td').eq(5).text(item.portType || '');
+                                tr.find('td').eq(6).text(item.swallowedCardCount || 0);
+                                tr.find('td').eq(7).text(item.status ? 'đang hoạt động' : 'không sử dụng');
+
+                                $("#lblCreatedBy").text(item.createdBy || "...");
+                                $("#lblCreatedDate").text(item.createdDate || "...");
+                                $("#lblModifiedBy").text(item.modifiedBy || "...");
+                                $("#lblModifiedDate").text(item.modifiedDate || "...");
+                            }
+                        }
+
+                        // Reset UI state
+                        currentAction = "";
+                        enableInputs(false);
+                        $("#btnCreate, #btnEdit, #btnDelete").removeClass("d-none");
+                        $("#btnSave, #btnCancel").addClass("d-none");
+                        $("#btnEdit, #btnDelete").prop("disabled", true);
+                        clearFields();
                     })
                     .fail(function (xhr) {
                         let errorMsg = xhr.responseText || "Dữ liệu cấu hình không hợp lệ!";
@@ -467,8 +544,16 @@
                 if (confirm("Bạn có chắc chắn muốn xóa máy tính đang chọn không?")) {
                     let token = $('input[name="__RequestVerificationToken"]').val();
                     $.post(`/Computers/Delete/${id}`, { id: id, __RequestVerificationToken: token })
-                        .done(function () {
-                            window.location.reload();
+                        .done(function (res) {
+                            if (res && res.success) {
+                                $("#gridTable tbody tr.selected-row").remove();
+                                clearFields();
+                                $("#btnEdit, #btnDelete").prop("disabled", true);
+                                const count = $("#gridTable tbody tr").length;
+                                $(".winform-statusbar strong").last().text(count);
+                            } else {
+                                showError("Không thể xóa máy tính này.");
+                            }
                         })
                         .fail(function (xhr) {
                             let errorMsg = xhr.responseText || "Không thể xóa máy tính này!";

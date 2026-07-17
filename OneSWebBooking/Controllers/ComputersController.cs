@@ -38,7 +38,32 @@ namespace OneSWebBooking.Controllers
         {
             string currentUsername = HttpContext.User.Identity?.Name ?? "system";
             var (success, error) = await _computerService.CreateAsync(computer, currentUsername);
-            if (success) return Json(new { success = true });
+            if (success)
+            {
+                return Json(new
+                {
+                    success = true,
+                    item = new
+                    {
+                        id = computer.Id,
+                        name = computer.ComputerName,
+                        counter = computer.CounterName,
+                        ip = computer.IpAddress,
+                        mac = computer.MacAddress,
+                        catId = computer.ComputerCategoryId,
+                        areaId = computer.AreaId,
+                        service = computer.ServiceName,
+                        portType = computer.PortType,
+                        swallowedCardCount = computer.SwallowedCardCount,
+                        status = computer.Status,
+                        createdBy = computer.CreatedBy,
+                        createdDate = computer.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss"),
+                        modifiedBy = computer.ModifiedBy,
+                        modifiedDate = computer.ModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss")
+                    }
+                });
+            }
+
             return BadRequest(error ?? "Dữ liệu không hợp lệ!");
         }
 
@@ -50,7 +75,32 @@ namespace OneSWebBooking.Controllers
             if (id != computer.Id) return NotFound();
             string currentUsername = HttpContext.User.Identity?.Name ?? "system";
             var (success, error) = await _computerService.EditAsync(id ?? 0, computer, currentUsername);
-            if (success) return Json(new { success = true });
+            if (success)
+            {
+                return Json(new
+                {
+                    success = true,
+                    item = new
+                    {
+                        id = computer.Id,
+                        name = computer.ComputerName,
+                        counter = computer.CounterName,
+                        ip = computer.IpAddress,
+                        mac = computer.MacAddress,
+                        catId = computer.ComputerCategoryId,
+                        areaId = computer.AreaId,
+                        service = computer.ServiceName,
+                        portType = computer.PortType,
+                        swallowedCardCount = computer.SwallowedCardCount,
+                        status = computer.Status,
+                        createdBy = computer.CreatedBy,
+                        createdDate = computer.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss"),
+                        modifiedBy = computer.ModifiedBy,
+                        modifiedDate = computer.ModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss")
+                    }
+                });
+            }
+
             if (error == null) return NotFound();
             return BadRequest(error);
         }
@@ -63,7 +113,7 @@ namespace OneSWebBooking.Controllers
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             var (success, error) = await _computerService.DeleteAsync(id);
-            if (success) return Json(new { success = true });
+            if (success) return Json(new { success = true, id = id });
             if (error != null) return BadRequest(error);
             return NotFound();
         }

@@ -31,7 +31,25 @@ namespace OneSWebBooking.Controllers
         {
             string currentUsername = HttpContext.User.Identity?.Name ?? "system";
             var (success, error) = await _categoriesService.CreateAsync(computercategory, currentUsername);
-            if (success) return Json(new { success = true });
+            if (success)
+            {
+                return Json(new
+                {
+                    success = true,
+                    item = new
+                    {
+                        id = computercategory.Id,
+                        name = computercategory.CategoryName,
+                        desc = computercategory.Description,
+                        status = computercategory.Status,
+                        createdBy = computercategory.CreatedBy,
+                        createdDate = computercategory.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss"),
+                        modifiedBy = computercategory.ModifiedBy,
+                        modifiedDate = computercategory.ModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss")
+                    }
+                });
+            }
+
             return BadRequest(error ?? "Dữ liệu không hợp lệ!");
         }
 
@@ -43,7 +61,25 @@ namespace OneSWebBooking.Controllers
             if (id != computercategory.Id) return NotFound();
             string currentUsername = HttpContext.User.Identity?.Name ?? "system";
             var (success, error) = await _categoriesService.EditAsync(id ?? 0, computercategory, currentUsername);
-            if (success) return Json(new { success = true });
+            if (success)
+            {
+                return Json(new
+                {
+                    success = true,
+                    item = new
+                    {
+                        id = computercategory.Id,
+                        name = computercategory.CategoryName,
+                        desc = computercategory.Description,
+                        status = computercategory.Status,
+                        createdBy = computercategory.CreatedBy,
+                        createdDate = computercategory.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss"),
+                        modifiedBy = computercategory.ModifiedBy,
+                        modifiedDate = computercategory.ModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss")
+                    }
+                });
+            }
+
             if (error == null) return NotFound();
             return BadRequest(error);
         }
@@ -56,7 +92,7 @@ namespace OneSWebBooking.Controllers
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             var (success, error) = await _categoriesService.DeleteAsync(id);
-            if (success) return Json(new { success = true });
+            if (success) return Json(new { success = true, id = id });
             if (error != null) return BadRequest(error);
             return NotFound();
         }

@@ -292,8 +292,8 @@
         $(document).ready(function () {
             let currentAction = ""; // Trạng thái: rỗng, "create", hoặc "edit"
 
-            // 1. CLICK CHỌN 1 DÒNG TRÊN BẢNG GRID
-            $("#gridTable tbody tr").click(function () {
+            // 1. CLICK CHỌN 1 DÒNG TRÊN BẢNG GRID (use event delegation so dynamically added rows work)
+            $("#gridTable tbody").on("click", "tr", function () {
                 if (currentAction !== "") return; // Đang thêm/sửa thì khóa bảng
 
                 $("#gridTable tbody tr").removeClass("selected-row");
@@ -369,11 +369,62 @@
                 let formData = $("#areaForm").serialize();
 
                 $.post(url, formData)
-                    .done(function () {
-                        window.location.reload();
+                    .done(function (res) {
+                        if (!res || !res.success) {
+                            showError("Lỗi không xác định từ máy chủ.");
+                            return;
+                        }
+                        const item = res.item;
+                        if (currentAction === "create") {
+                            // Thêm dòng mới vào bảng
+                            const tr = $("<tr>")
+                                .attr("data-id", item.id)
+                                .attr("data-name", item.name)
+                                .attr("data-desc", item.desc)
+                                .attr("data-status", item.status.toString())
+                                .attr("data-createdby", item.createdBy || "")
+                                .attr("data-createddate", item.createdDate || "...")
+                                .attr("data-modifiedby", item.modifiedBy || "")
+                                .attr("data-modifieddate", item.modifiedDate || "...")
+                                .toggleClass("row-inactive", !item.status)
+                                .append($("<td>").addClass("fw-bold").text(item.name))
+                                .append($("<td>").text(item.desc))
+                                .append($("<td>").text(item.status ? "đang hoạt động" : "không sử dụng"));
+
+                            $("#gridTable tbody").append(tr);
+                            // chọn dòng mới
+                            $("#gridTable tbody tr").removeClass("selected-row");
+                            tr.addClass("selected-row");
+                        } else {
+                            // Cập nhật dòng đang chọn
+                            const tr = $("#gridTable tbody tr.selected-row");
+                            if (tr.length) {
+                                tr.attr("data-name", item.name)
+                                  .attr("data-desc", item.desc)
+                                  .attr("data-status", item.status.toString())
+                                  .attr("data-modifiedby", item.modifiedBy || "")
+                                  .attr("data-modifieddate", item.modifiedDate || "...")
+                                  .find("td").eq(0).text(item.name).end()
+                                  .find("td").eq(1).text(item.desc).end()
+                                  .find("td").eq(2).text(item.status ? "đang hoạt động" : "không sử dụng");
+
+                                // Cập nhật thanh audit
+                                $("#lblCreatedBy").text(item.createdBy || "...");
+                                $("#lblCreatedDate").text(item.createdDate || "...");
+                                $("#lblModifiedBy").text(item.modifiedBy || "...");
+                                $("#lblModifiedDate").text(item.modifiedDate || "...");
+                            }
+                        }
+
+                        // Reset trạng thái UI
+                        currentAction = "";
+                        enableInputs(false);
+                        $("#btnCreate, #btnEdit, #btnDelete").removeClass("d-none");
+                        $("#btnSave, #btnCancel").addClass("d-none");
+                        $("#btnEdit, #btnDelete").prop("disabled", true);
+                        clearFields();
                     })
                     .fail(function (xhr) {
-                        // Hiển thị câu báo lỗi thực tế từ Backend gửi về
                         let errorMsg = xhr.responseText || "Tên khu vực này đã tồn tại hoặc dữ liệu không hợp lệ!";
                         showError(errorMsg);
                     });
@@ -387,11 +438,22 @@
                 if (confirm("Bạn có chắc chắn muốn xóa khu vực đang chọn không?")) {
                     let token = $('input[name="__RequestVerificationToken"]').val();
                     $.post(`/Areas/Delete/${id}`, { id: id, __RequestVerificationToken: token })
-                        .done(function () {
-                            window.location.reload();
+                        .done(function (res) {
+                            if (res && res.success) {
+                                // remove selected row
+                                $("#gridTable tbody tr.selected-row").remove();
+                                clearFields();
+                                $("#btnEdit, #btnDelete").prop("disabled", true);
+                                // cập nhật tổng số bản ghi
+                                const count = $("#gridTable tbody tr").length;
+                                $(".winform-statusbar strong").last().text(count);
+                            } else {
+                                showError("Không thể xóa khu vực này.");
+                            }
                         })
-                        .fail(function () {
-                            showError("Không thể xóa khu vực này vì đang có máy tính hoạt động tại đây!");
+                        .fail(function (xhr) {
+                            let errorMsg = xhr.responseText || "Không thể xóa khu vực này vì đang có máy tính hoạt động tại đây!";
+                            showError(errorMsg);
                         });
                 }
             });

@@ -31,7 +31,26 @@ namespace OneSWebBooking.Controllers
         {
             var currentUsername = HttpContext.User.Identity?.Name ?? "system";
             var (success, error) = await _areasService.CreateAsync(area, currentUsername);
-            if (success) return Json(new { success = true });
+            if (success)
+            {
+                // area object is updated by the service (Id, CreatedDate...)
+                return Json(new
+                {
+                    success = true,
+                    item = new
+                    {
+                        id = area.Id,
+                        name = area.AreaName,
+                        desc = area.Description,
+                        status = area.Status,
+                        createdBy = area.CreatedBy,
+                        createdDate = area.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss"),
+                        modifiedBy = area.ModifiedBy,
+                        modifiedDate = area.ModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss")
+                    }
+                });
+            }
+
             return BadRequest(error ?? "Dữ liệu không hợp lệ!");
         }
 
@@ -43,7 +62,25 @@ namespace OneSWebBooking.Controllers
             if (id != area.Id) return NotFound();
             var currentUsername = HttpContext.User.Identity?.Name ?? "system";
             var (success, error) = await _areasService.EditAsync(id ?? 0, area, currentUsername);
-            if (success) return Json(new { success = true });
+            if (success)
+            {
+                return Json(new
+                {
+                    success = true,
+                    item = new
+                    {
+                        id = area.Id,
+                        name = area.AreaName,
+                        desc = area.Description,
+                        status = area.Status,
+                        createdBy = area.CreatedBy,
+                        createdDate = area.CreatedDate?.ToString("dd/MM/yyyy HH:mm:ss"),
+                        modifiedBy = area.ModifiedBy,
+                        modifiedDate = area.ModifiedDate?.ToString("dd/MM/yyyy HH:mm:ss")
+                    }
+                });
+            }
+
             if (error == null) return NotFound();
             return BadRequest(error);
         }
@@ -56,7 +93,7 @@ namespace OneSWebBooking.Controllers
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             var (success, error) = await _areasService.DeleteAsync(id);
-            if (success) return Json(new { success = true });
+            if (success) return Json(new { success = true, id = id });
             if (error != null) return BadRequest(error);
             return NotFound();
         }
