@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OneSWebBooking.Models;
+using OneSWebBooking.Services.Interfaces;
 using System.Diagnostics;
 
 namespace OneSWebBooking.Controllers
@@ -8,6 +9,12 @@ namespace OneSWebBooking.Controllers
     [Authorize]
     public class HomeController : Controller
     {
+        private readonly IHomeService _homeService;
+
+        public HomeController(IHomeService homeService)
+        {
+            _homeService = homeService;
+        }
         public IActionResult Index()
         {
             return View();
