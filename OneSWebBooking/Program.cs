@@ -1,6 +1,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using OneSWebBooking.Data;
+using OneSWebBooking.Services.Implementations;
+using OneSWebBooking.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +36,14 @@ builder.Services.AddSession(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Register application services (Controller -> Service pattern)
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAreasService, AreasService>();
+builder.Services.AddScoped<IComputerCategoriesService, ComputerCategoriesService>();
+builder.Services.AddScoped<IComputerService, ComputerService>();
+builder.Services.AddScoped<IHomeService, HomeService>();
 
 var app = builder.Build();
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OneSWebBooking.Data;
 using OneSWebBooking.Models;
+using OneSWebBooking.Services.Interfaces;
 using System.Diagnostics;
 
 namespace OneSWebBooking.Controllers
@@ -10,17 +11,17 @@ namespace OneSWebBooking.Controllers
     [Authorize] 
     public class AreasController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IAreasService _areasService;
 
-        public AreasController(ApplicationDbContext context)
+        public AreasController(IAreasService areasService)
         {
-            _context = context;
+            _areasService = areasService;
         }
 
         // GET: Areas (trang duy nhất có giao diện, Create/Edit xử lý qua modal + AJAX)
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Areas.ToListAsync());
+            return View(await _areasService.GetAllAsync());
         }
 
         // POST: Areas/Create (AJAX, trả JSON)
@@ -28,35 +29,10 @@ namespace OneSWebBooking.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,AreaName,Description,Status")] Area area)
         {
-            // 3. ĐỒNG BỘ: Dùng HttpContext.User.Identity để tránh xung đột với Model User
             var currentUsername = HttpContext.User.Identity?.Name ?? "system";
-
-            area.CreatedBy = currentUsername;
-            area.CreatedDate = DateTime.Now;
-            area.ModifiedBy = currentUsername;
-            area.ModifiedDate = DateTime.Now;
-
-            ModelState.Clear();
-            TryValidateModel(area);
-
-            if (!string.IsNullOrEmpty(area.AreaName))
-            {
-                bool isDuplicate = await _context.Areas.AnyAsync(a => a.AreaName.ToLower().Trim() == area.AreaName.ToLower().Trim());
-                if (isDuplicate)
-                {
-                    ModelState.AddModelError("AreaName", "Tên khu vực này đã tồn tại trong hệ thống!");
-                }
-            }
-
-            if (ModelState.IsValid)
-            {
-                _context.Add(area);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true });
-            }
-
-            var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Dữ liệu không hợp lệ!";
-            return BadRequest(firstError);
+            var (success, error) = await _areasService.CreateAsync(area, currentUsername);
+            if (success) return Json(new { success = true });
+            return BadRequest(error ?? "Dữ liệu không hợp lệ!");
         }
 
         // POST: Areas/Edit/5 (AJAX, trả JSON)
@@ -65,47 +41,11 @@ namespace OneSWebBooking.Controllers
         public async Task<IActionResult> Edit(int? id, [Bind("Id,AreaName,Description,Status")] Area area)
         {
             if (id != area.Id) return NotFound();
-
-            var existingArea = await _context.Areas.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
-            if (existingArea == null) return NotFound();
-
-            // 4. ĐỒNG BỘ: Sửa đổi ở đây từ "User.Identity" thành "HttpContext.User.Identity"
             var currentUsername = HttpContext.User.Identity?.Name ?? "system";
-
-            area.CreatedBy = existingArea.CreatedBy;
-            area.CreatedDate = existingArea.CreatedDate;
-            area.ModifiedBy = currentUsername;
-            area.ModifiedDate = DateTime.Now;
-
-            ModelState.Clear();
-            TryValidateModel(area);
-
-            if (!string.IsNullOrEmpty(area.AreaName))
-            {
-                bool isDuplicate = await _context.Areas.AnyAsync(a => a.AreaName.ToLower().Trim() == area.AreaName.ToLower().Trim() && a.Id != id);
-                if (isDuplicate)
-                {
-                    ModelState.AddModelError("AreaName", "Tên khu vực này đã tồn tại trong hệ thống!");
-                }
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(area);
-                    await _context.SaveChangesAsync();
-                    return Json(new { success = true });
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AreaExists(area.Id)) return NotFound();
-                    else throw;
-                }
-            }
-
-            var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Dữ liệu không hợp lệ!";
-            return BadRequest(firstError);
+            var (success, error) = await _areasService.EditAsync(id ?? 0, area, currentUsername);
+            if (success) return Json(new { success = true });
+            if (error == null) return NotFound();
+            return BadRequest(error);
         }
 
         // POST: Areas/Delete/5 (AJAX, trả JSON)
@@ -115,27 +55,12 @@ namespace OneSWebBooking.Controllers
         // [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
-            if (id == null) return NotFound();
-
-            bool isUsed = await _context.Computers.AnyAsync(c => c.AreaId == id);
-            if (isUsed)
-            {
-                return BadRequest("Không thể xóa khu vực này vì đang có máy tính hoạt động tại đây!");
-            }
-
-            var area = await _context.Areas.FindAsync(id);
-            if (area != null)
-            {
-                _context.Areas.Remove(area);
-                await _context.SaveChangesAsync();
-            }
-
-            return Json(new { success = true });
+            var (success, error) = await _areasService.DeleteAsync(id);
+            if (success) return Json(new { success = true });
+            if (error != null) return BadRequest(error);
+            return NotFound();
         }
 
-        private bool AreaExists(int? id)
-        {
-            return _context.Areas.Any(e => e.Id == id);
-        }
+        
     }
 }
